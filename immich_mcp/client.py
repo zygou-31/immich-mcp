@@ -1,74 +1,8 @@
-
-
 import os
-from typing import List, Optional, Any
-
 import httpx
-from pydantic import BaseModel, HttpUrl, Field
-
-# --- Pydantic Models for Immich API Responses ---
-
-class ServerInfoResponse(BaseModel):
-    version: str
-    isReady: bool
-    userName: str
-    admin: bool
-    url: HttpUrl
-    loginPageMessage: Optional[str] = None
-    externalUrl: Optional[HttpUrl] = None
-    disableAdmin: bool
-    liveSyncEnabled: bool
-    trashDays: int
-    isAllowUpload: bool = Field(..., alias="is_allow_upload")
-
-class SmartSearchResponse(BaseModel):
-    id: str
-
-class AssetResponse(BaseModel):
-    id: str
-    createdAt: str
-    updatedAt: str
-    deletedAt: Optional[str] = None
-    userId: str
-    checksum: str
-    originalPath: str
-    originalProperties: dict
-    deviceAssetId: str
-    deviceId: str
-    type: str # 'IMAGE', 'VIDEO'
-    mimeType: str
-    duration: Optional[str] = None
-    fileCreatedAt: str
-    fileModifiedAt: str
-    webpPath: Optional[str] = None
-    encodedVideoPath: Optional[str] = None
-    livePhotoVideoId: Optional[str] = None
-    isFavorite: bool
-    isArchived: bool
-    isTrash: bool
-    isExternal: bool
-    isReadOnly: bool
-    isOffline: bool
-    webpHash: Optional[str] = None
-    motionVectorPath: Optional[str] = None
-    sidecarPath: Optional[str] = None
-    stackParentId: Optional[str] = None
-    stackCount: Optional[int] = None
-
-class AlbumResponse(BaseModel):
-    id: str
-    ownerId: str
-    albumName: str
-    createdAt: str
-    updatedAt: str
-    shared: bool
-    albumThumbnailAssetId: Optional[str] = None
-    assetCount: int
-    assets: List[AssetResponse] = []
-
-# --- ImmichClient Class ---
 
 class ImmichClient:
+
     def __init__(self, base_url: str, api_key: str, timeout: int = 30):
         if not base_url.endswith('/'):
             base_url += '/'
@@ -79,30 +13,18 @@ class ImmichClient:
         }
         self.client = httpx.AsyncClient(base_url=self.base_url, headers=self.headers, timeout=timeout)
 
-    async def _request(self, method: str, path: str, **kwargs):
-        try:
-            response = await self.client.request(method, path, **kwargs)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            print(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
-            raise
-        except httpx.RequestError as e:
-            print(f"An error occurred while requesting {e.request.url!r}.")
-            raise
-
-    async def ping(self) -> ServerInfoResponse:
+    async def ping(self) -> httpx.Response:
         """Health check and server info."""
-        data = await self._request("GET", "api/server-info/ping")
-        return ServerInfoResponse(**data)
+        return await self.client.get("api/server-info/ping")
 
-    async def search_smart(self, query: str, limit: int = 20) -> List[SmartSearchResponse]:
+    async def search_smart(self, query: str, limit: int = 20, album_id: str = None) -> httpx.Response:
         """Perform a smart search for assets."""
         params = {"q": query, "limit": limit}
-        data = await self._request("GET", "api/search/smart", params=params)
-        return [SmartSearchResponse(**item) for item in data]
+        if album_id:
+            params["albumId"] = album_id
+        return await self.client.get("api/search/smart", params=params)
 
-    async def upload_asset(self, file_path: str) -> AssetResponse:
+    async def upload_asset(self, file_path: str, album_id: str = None) -> httpx.Response:
         """Upload a new asset."""
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -117,23 +39,30 @@ class ImmichClient:
             "fileCreatedAt": "2023-01-01T00:00:00.000Z",
             "fileModifiedAt": "2023-01-01T00:00:00.000Z",
         }
+        if album_id:
+            data["albumId"] = album_id
 
-        json_response = await self._request("POST", "api/asset/upload", files=files, data=data) 
+        response = await self.client.post("api/asset/upload", files=files, data=data) 
         
         # Close the file after upload
         files["assetData"][1].close()
 
-        # The Immich upload endpoint usually returns an UploadResponse, but we'll adapt to AssetResponse
-        # For a full implementation, you might need a dedicated UploadResponse model
-        return AssetResponse(**json_response)
+        return response
 
-    async def list_albums(self) -> List[AlbumResponse]:
+    async def list_albums(self) -> httpx.Response:
         """List all albums."""
-        data = await self._request("GET", "api/albums")
-        return [AlbumResponse(**item) for item in data]
+        return await self.client.get("api/albums")
 
-    async def get_asset_details(self, asset_id: str) -> AssetResponse:
+    async def create_album(self, album_name: str, description: str = "", assets: list = []) -> httpx.Response:
+        """Create a new album."""
+        payload = {
+            "albumName": album_name,
+            "description": description,
+            "assetIds": assets,
+        }
+        return await self.client.post("api/albums", json=payload)
+
+    async def get_asset_details(self, asset_id: str) -> httpx.Response:
         """Get details for a specific asset by ID."""
-        data = await self._request("GET", f"api/assets/{asset_id}")
-        return AssetResponse(**data)
+        return await self.client.get(f"api/assets/{asset_id}")
 

@@ -49,27 +49,38 @@ class ImmichTools:
         except httpx.RequestError as e:
             return f"Network error getting asset info: {e}"
 
-    async def search_metadata(self, query: str) -> str:
-        """Searches for assets based on metadata."""
+    async def search_photos(self, query: str, limit: int = 20, album_id: str = None) -> str:
+        """Searches for photos in Immich."""
         try:
-            response = await self.client.search_smart(query)
+            response = await self.client.search_smart(query, limit, album_id)
             return response.json()
         except httpx.HTTPStatusError as e:
-            return f"Error searching metadata: {e.response.status_code} - {e.response.text}"
+            return f"Error searching photos: {e.response.status_code} - {e.response.text}"
         except httpx.RequestError as e:
-            return f"Network error searching metadata: {e}"
+            return f"Network error searching photos: {e}"
 
-    async def upload_asset(self, file_path: str) -> str:
-        """Uploads an asset to Immich."""
+    async def upload_photo(self, file_path: str, album_id: str = None) -> str:
+        """Uploads a photo to Immich."""
         try:
-            response = await self.client.upload_asset(file_path)
+            response = await self.client.upload_asset(file_path, album_id)
             return response.json()
         except httpx.HTTPStatusError as e:
-            return f"Error uploading asset: {e.response.status_code} - {e.response.text}"
+            return f"Error uploading photo: {e.response.status_code} - {e.response.text}"
         except httpx.RequestError as e:
-            return f"Network error uploading asset: {e}"
+            return f"Network error uploading photo: {e}"
         except FileNotFoundError as e:
             return str(e)
+            
+    async def create_album(self, album_name: str, description: str = "", assets: list = []) -> str:
+        """Creates a new album in Immich."""
+        try:
+            response = await self.client.create_album(album_name, description, assets)
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            return f"Error creating album: {e.response.status_code} - {e.response.text}"
+        except httpx.RequestError as e:
+            return f"Network error creating album: {e}"
+
 
 tool_server = ToolServer(
     name="immich-mcp-server",
@@ -79,8 +90,9 @@ tool_server = ToolServer(
         Tool.from_function(ImmichTools().ping_server),
         Tool.from_function(ImmichTools().get_all_albums),
         Tool.from_function(ImmichTools().get_asset_info),
-        Tool.from_function(ImmichTools().search_metadata),
-        Tool.from_function(ImmichTools().upload_asset),
+        Tool.from_function(ImmichTools().search_photos),
+        Tool.from_function(ImmichTools().upload_photo),
+        Tool.from_function(ImmichTools().create_album),
     ],
 )
 
