@@ -1,10 +1,14 @@
 
-import os
-from dotenv import load_dotenv
+
+
+import logging
 from mcp.server import Server
 from mcp.server.fastmcp.tools.base import Tool
+from immich_mcp.config import load_config
 
-load_dotenv()
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Define a simple tool
 class GreetTool(Tool):
@@ -31,17 +35,25 @@ def create_mcp_server() -> Server:
     """
     Creates and configures the MCP server for Immich.
     """
-    # Load configuration from environment variables or .env file
-    immich_api_url = os.getenv("IMMICH_API_URL")
-    immich_api_key = os.getenv("IMMICH_API_KEY")
+    # Load and validate configuration
+    try:
+        config = load_config()
+        logger.info("Immich API configuration loaded")
 
-    if not immich_api_url or not immich_api_key:
-        print("Warning: IMMICH_API_URL and IMMICH_API_KEY not set. Immich features will not be available.")
-        # Alternatively, you could raise an error or provide mock functionality
+        # Test connection during startup (async context required)
+        import asyncio
+        if asyncio.run(config.test_connection()):
+            logger.info("Successfully connected to Immich API")
+        else:
+            logger.warning("Could not connect to Immich API - functionality may be limited")
+
+    except Exception as e:
+        logger.error(f"Configuration error: {e}")
+        raise
 
     server = Server(name="Immich MCP Server")
     server.register_tool(GreetTool())
-    
+
     # Initialize Immich client here with loaded config
     # For now, just a placeholder
 
@@ -52,7 +64,7 @@ if __name__ == "__main__":
     print("Starting MCP server...")
     # In a real application, you would run this with a proper ASGI server like uvicorn
     # For demonstration, we'll keep it simple or show how to run it
-    
+
     import uvicorn
     uvicorn.run(server.app, host="0.0.0.0", port=8000)
 

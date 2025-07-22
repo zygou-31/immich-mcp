@@ -1,26 +1,38 @@
 
+
 from mcp.server.fastmcp.server import FastMCP as ToolServer
 from mcp.server.fastmcp.tools.base import Tool
-from fastapi import FastAPI
-from dotenv import load_dotenv
-import os
+from fastapi import FastAPI, HTTPException
+import httpx
+import logging
 
-load_dotenv()
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Import the new configuration system
+from immich_mcp.config import load_config
 
 app = FastAPI()
 
-import httpx
-
 class ImmichTools:
     def __init__(self):
+        # Load and validate configuration
+        self.config = load_config()
+        logger.info("Immich API configuration loaded")
 
-        self.immich_api_key = os.getenv("IMMICH_API_KEY")
-        self.immich_base_url = os.getenv("IMMICH_BASE_URL", "http://localhost:2283/api")
+        # Test connection during startup (async context required)
+        import asyncio
+        if asyncio.run(self.config.test_connection()):
+            logger.info("Successfully connected to Immich API")
+        else:
+            logger.warning("Could not connect to Immich API - functionality may be limited")
+
         self.http_client = httpx.AsyncClient(
-            base_url=self.immich_base_url,
-            headers={"x-api-key": self.immich_api_key},
+            base_url=str(self.config.immich_base_url),
+            headers={"x-api-key": self.config.immich_api_key},
+            timeout=self.config.immich_timeout,
         )
-
 
     async def get_server_version(self) -> str:
         """
@@ -43,8 +55,9 @@ tool_server = ToolServer(
 )
 
 # FastMCP creates its own Starlette app; mount it to FastAPI
-app.mount("/", tool_server.streamable_http_app()) 
+app.mount("/", tool_server.streamable_http_app())
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

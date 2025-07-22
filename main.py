@@ -7,17 +7,41 @@ import os
 
 from immich_mcp.client import ImmichClient
 
+from immich_mcp.config import ImmichConfig
+import asyncio
+from dotenv import load_dotenv
+
 load_dotenv()
 
 app = FastAPI()
 
 import httpx
 
+# Load configuration and test connection on startup
+try:
+    print(f"Loaded environment variables:")
+    print(f"  IMMICH_BASE_URL: {os.getenv('IMMICH_BASE_URL')}")
+    print(f"  IMMICH_API_KEY: {os.getenv('IMMICH_API_KEY')}")
+    print(f"  IMMICH_TIMEOUT: {os.getenv('IMMICH_TIMEOUT')}")
+    print(f"  IMMICH_MAX_RETRIES: {os.getenv('IMMICH_MAX_RETRIES')}")
+    config = ImmichConfig(
+        base_url=os.getenv("IMMICH_BASE_URL"),
+        api_key=os.getenv("IMMICH_API_KEY"),
+        timeout=int(os.getenv("IMMICH_TIMEOUT", 30)),
+        max_retries=int(os.getenv("IMMICH_MAX_RETRIES", 3)),
+    )
+    if not asyncio.run(config.test_connection()):
+        raise ValueError("Immich API connection test failed.")
+except Exception as e:
+    print(f"Configuration error: {e}")
+    exit(1)
+
+# Create a single ImmichClient instance
+immich_client = ImmichClient(config)
+
 class ImmichTools:
-    def __init__(self):
-        self.immich_api_key = os.getenv("IMMICH_API_KEY")
-        self.immich_base_url = os.getenv("IMMICH_BASE_URL", "http://localhost:2283/api")
-        self.client = ImmichClient(base_url=self.immich_base_url, api_key=self.immich_api_key)
+    def __init__(self, client: ImmichClient):
+        self.client = client
 
     async def ping_server(self) -> str:
         """Pings the Immich server to check for a connection."""
@@ -81,18 +105,20 @@ class ImmichTools:
         except httpx.RequestError as e:
             return f"Network error creating album: {e}"
 
+# Create an instance of ImmichTools with the shared client
+immich_tools = ImmichTools(immich_client)
 
 tool_server = ToolServer(
     name="immich-mcp-server",
     instructions="MCP server for Immich API with tools for pinging, albums, assets, search, and uploads.",
     version="0.1.0",
     tools=[
-        Tool.from_function(ImmichTools().ping_server),
-        Tool.from_function(ImmichTools().get_all_albums),
-        Tool.from_function(ImmichTools().get_asset_info),
-        Tool.from_function(ImmichTools().search_photos),
-        Tool.from_function(ImmichTools().upload_photo),
-        Tool.from_function(ImmichTools().create_album),
+        Tool.from_function(immich_tools.ping_server),
+        Tool.from_function(immich_tools.get_all_albums),
+        Tool.from_function(immich_tools.get_asset_info),
+        Tool.from_function(immich_tools.search_photos),
+        Tool.from_function(immich_tools.upload_photo),
+        Tool.from_function(immich_tools.create_album),
     ],
 )
 
