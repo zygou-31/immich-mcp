@@ -262,11 +262,11 @@ async def smart_search():
     
     async with ImmichTools(config) as tools:
         # Search by content
-        results = json.loads(await tools.search_photos("dog", limit=10))
+        results = json.loads(await tools.search_smart("dog", limit=10))
         print(f"Found {len(results)} photos with dogs")
         
         # Search by location
-        beach_photos = json.loads(await tools.search_photos("beach", limit=15))
+        beach_photos = json.loads(await tools.search_places("beach", limit=15))
         print(f"Found {len(beach_photos)} beach photos")
         
         # Search within specific album
@@ -276,11 +276,43 @@ async def smart_search():
             vacation_album = next((a for a in albums if "vacation" in a["albumName"].lower()), None)
             if vacation_album:
                 vacation_photos = json.loads(
-                    await tools.search_photos("sunset", album_id=vacation_album["id"], limit=10)
+                    await tools.search_metadata({"albumId": vacation_album["id"], "q": "sunset", "limit": 10})
                 )
-                print(f"Found {len(vacation_photos)} sunset photos in vacation album")
+                print(f"Found {len(vacation_photos['assets']['items'])} sunset photos in vacation album")
 
 asyncio.run(smart_search())
+```
+
+### People Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def people_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-api-key"
+    )
+    
+    async with ImmichTools(config) as tools:
+        # Get all people
+        people_result = json.loads(await tools.get_all_people())
+        print(f"Found {people_result['total']} people")
+        
+        # Get specific person info
+        if people_result["people"]:
+            person_id = people_result["people"][0]["id"]
+            person_info = json.loads(await tools.get_person(person_id))
+            print(f"First person: {person_info['name']}")
+            
+            # Get person statistics
+            stats = json.loads(await tools.get_person_statistics(person_id))
+            print(f"Statistics for {person_info['name']}: {stats['totalAssets']} assets")
+
+asyncio.run(people_management())
 ```
 
 ## Error Handling
