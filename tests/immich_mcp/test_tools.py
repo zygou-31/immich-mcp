@@ -1,11 +1,8 @@
 
-
-
 import pytest
 import httpx
 import respx
 from immich_mcp.config import ImmichConfig
-from immich_mcp.client import ImmichClient
 from immich_mcp.tools import ImmichTools
 
 
@@ -25,8 +22,7 @@ async def test_get_asset_info(immich_config: ImmichConfig):
             return_value=httpx.Response(200, json={"id": asset_id, "originalFileName": "test.jpg"})
         )
         
-        client = ImmichClient(immich_config)
-        tools = ImmichTools(client)
+        tools = ImmichTools(immich_config)
         
         result = await tools.get_asset_info(asset_id=asset_id)
         
@@ -41,8 +37,7 @@ async def test_get_all_assets(immich_config: ImmichConfig):
             return_value=httpx.Response(200, json=[{"id": "1", "originalFileName": "test.jpg"}])
         )
         
-        client = ImmichClient(immich_config)
-        tools = ImmichTools(client)
+        tools = ImmichTools(immich_config)
         
         result = await tools.get_all_assets()
         
@@ -61,8 +56,7 @@ async def test_get_asset_info_error(immich_config: ImmichConfig):
             return_value=httpx.Response(404, json={"error": "Asset not found"})
         )
         
-        client = ImmichClient(immich_config)
-        tools = ImmichTools(client)
+        tools = ImmichTools(immich_config)
         
         result = await tools.get_asset_info(asset_id=asset_id)
         
@@ -78,13 +72,10 @@ async def test_get_all_assets_error(immich_config: ImmichConfig):
             return_value=httpx.Response(500, json={"error": "Server error"})
         )
         
-        client = ImmichClient(immich_config)
-        tools = ImmichTools(client)
+        tools = ImmichTools(immich_config)
         
         result = await tools.get_all_assets()
         
         import json
         response = json.loads(result)
         assert "error" in response
-
-
