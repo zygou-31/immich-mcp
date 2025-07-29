@@ -146,17 +146,17 @@ async def test_get_asset_error(immich_config: ImmichConfig):
             assert stats["totalSize"] == 1024000
 
     @pytest.mark.asyncio
-async def test_get_person_thumbnail_success(immich_config: ImmichConfig):
-    person_id = "1"
-    async with respx.mock:
-        respx.get(f"{immich_config.immich_base_url}/api/people/{person_id}/thumbnail").mock(
-            return_value=httpx.Response(200, content=b"fake_thumbnail_data")
-        )
-        
-        client = ImmichClient(immich_config)
-        thumbnail = await client.get_person_thumbnail(person_id)
-        
-        assert thumbnail == b"fake_thumbnail_data"
+    async def test_get_person_thumbnail_success(immich_config: ImmichConfig):
+        person_id = "1"
+        async with respx.mock:
+            respx.get(f"{immich_config.immich_base_url}/api/people/{person_id}/thumbnail").mock(
+                return_value=httpx.Response(200, content=b"fake_thumbnail_data")
+            )
+            
+            client = ImmichClient(immich_config)
+            thumbnail = await client.get_person_thumbnail(person_id)
+            
+            assert thumbnail == b"fake_thumbnail_data"
 
 
 @pytest.mark.asyncio

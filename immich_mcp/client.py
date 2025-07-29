@@ -379,3 +379,194 @@ class ImmichClient:
             response.raise_for_status()
             return response.content
 
+    async def get_all_albums(self) -> List[Dict[str, Any]]:
+        """
+        Retrieve all albums from the Immich API.
+        
+        Returns:
+            List[Dict[str, Any]]: List of album objects containing metadata like:
+                - id: Unique album identifier
+                - albumName: Album name
+                - description: Album description
+                - albumThumbnailAssetId: Thumbnail asset ID
+                - shared: Whether album is shared
+                - assetCount: Number of assets in album
+                - createdAt: Creation timestamp
+                - updatedAt: Last update timestamp
+                
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> albums = await client.get_all_albums()
+            >>> print(f"Found {len(albums)} albums")
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/albums",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_album(self, album_name: str, description: str = "", asset_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Create a new album in Immich.
+        
+        Args:
+            album_name: Name of the album to create
+            description: Optional description for the album
+            asset_ids: Optional list of asset IDs to add to the album
+            
+        Returns:
+            Dict[str, Any]: Created album object
+            
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> album = await client.create_album("Vacation 2024", "Summer vacation photos")
+        """
+        payload = {
+            "albumName": album_name,
+            "description": description
+        }
+        if asset_ids:
+            payload["assetIds"] = asset_ids
+            
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(
+                f"{self.config.immich_base_url}/api/albums",
+                headers=self.headers,
+                json=payload
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_album(self, album_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific album.
+        
+        Args:
+            album_id: The unique identifier of the album
+            
+        Returns:
+            Dict[str, Any]: Album object containing comprehensive information including:
+                - id: Unique album identifier
+                - albumName: Album name
+                - description: Album description
+                - assets: List of assets in the album
+                - albumThumbnailAssetId: Thumbnail asset ID
+                - shared: Whether album is shared
+                - sharedUsers: List of users album is shared with
+                - assetCount: Number of assets
+                - createdAt: Creation timestamp
+                - updatedAt: Last update timestamp
+                
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> album = await client.get_album("550e8400-e29b-41d4-a716-446655440000")
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/albums/{album_id}",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_album(self, album_id: str) -> None:
+        """
+        Delete an album from Immich.
+        
+        Args:
+            album_id: The unique identifier of the album to delete
+            
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> await client.delete_album("550e8400-e29b-41d4-a716-446655440000")
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.delete(
+                f"{self.config.immich_base_url}/api/albums/{album_id}",
+                headers=self.headers
+            )
+            response.raise_for_status()
+
+    async def add_assets_to_album(self, album_id: str, asset_ids: List[str]) -> Dict[str, Any]:
+        """
+        Add assets to an existing album.
+        
+        Args:
+            album_id: The unique identifier of the album
+            asset_ids: List of asset IDs to add to the album
+            
+        Returns:
+            Dict[str, Any]: Response containing success/failure information for each asset
+            
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> results = await client.add_assets_to_album("album-id", ["asset1", "asset2"])
+        """
+        payload = {
+            "ids": asset_ids
+        }
+        
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.put(
+                f"{self.config.immich_base_url}/api/albums/{album_id}/assets",
+                headers=self.headers,
+                json=payload
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def remove_assets_from_album(self, album_id: str, asset_ids: List[str]) -> Dict[str, Any]:
+        """
+        Remove assets from an album.
+        
+        Args:
+            album_id: The unique identifier of the album
+            asset_ids: List of asset IDs to remove from the album
+            
+        Returns:
+            Dict[str, Any]: Response containing success/failure information
+            
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> results = await client.remove_assets_from_album("album-id", ["asset1", "asset2"])
+        """
+        payload = {
+            "ids": asset_ids
+        }
+        
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.request(
+                "DELETE",
+                f"{self.config.immich_base_url}/api/albums/{album_id}/assets",
+                headers=self.headers,
+                json=payload
+            )
+            response.raise_for_status()
+            return response.json()
+
