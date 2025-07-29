@@ -221,6 +221,223 @@ Uploads a new photo to Immich.
 result = await immich_tools.upload_photo("/path/to/photo.jpg", album_id="album-uuid")
 ```
 
+#### `search_metadata(query: str = "", asset_type: str = None, is_favorite: bool = None, limit: int = 100)`
+Search assets by metadata criteria.
+
+**Parameters:**
+- `query` (str): Search query string for metadata (filename, description, etc.)
+- `asset_type` (str): Filter by asset type (IMAGE, VIDEO, AUDIO, OTHER)
+- `is_favorite` (bool): Filter by favorite status
+- `limit` (int): Maximum number of results to return
+
+**Returns:** JSON string containing search results with assets and total count
+
+**Example:**
+```python
+results = await tools.search_metadata("beach", "IMAGE", True, 50)
+```
+
+#### `search_smart(query: str, limit: int = 100)`
+Smart search using AI to find assets based on natural language queries.
+
+**Parameters:**
+- `query` (str): Natural language search query (e.g., "photos of my dog at the beach")
+- `limit` (int): Maximum number of results to return
+
+**Returns:** JSON string containing AI-powered search results
+
+**Example:**
+```python
+results = await tools.search_smart("photos of my dog at the beach", 10)
+```
+
+#### `search_people(query: str = "", limit: int = 50)`
+Search for people in the photo library.
+
+**Parameters:**
+- `query` (str): Search query for person names
+- `limit` (int): Maximum number of results to return
+
+**Returns:** JSON string containing list of people matching the search criteria
+
+**Example:**
+```python
+people = await tools.search_people("John", 10)
+```
+
+#### `search_places(query: str = "", limit: int = 50)`
+Search for places and locations in the photo library.
+
+**Parameters:**
+- `query` (str): Search query for place names
+- `limit` (int): Maximum number of results to return
+
+**Returns:** JSON string containing list of places matching the search criteria
+
+**Example:**
+```python
+places = await tools.search_places("beach", 10)
+```
+
+#### `get_search_suggestions(query: str = "")`
+Get search suggestions based on partial queries.
+
+**Parameters:**
+- `query` (str): Partial search query for suggestions
+
+**Returns:** JSON string containing list of search suggestions
+
+**Example:**
+```python
+suggestions = await tools.get_search_suggestions("be")
+```
+
+#### `search_random(limit: int = 10)`
+Get random assets from the photo library.
+
+**Parameters:**
+- `limit` (int): Maximum number of random assets to return
+
+**Returns:** JSON string containing list of random assets
+
+**Example:**
+```python
+random_assets = await tools.search_random(5)
+```
+
+#### `get_all_people(query: str = "", limit: int = 100, offset: int = 0)`
+Get all people from the photo library.
+
+**Parameters:**
+- `query` (str): Search query for filtering people by name
+- `limit` (int): Maximum number of people to return
+- `offset` (int): Number of people to skip for pagination
+
+**Returns:** JSON string containing people list and total count
+
+**Example:**
+```python
+people = await tools.get_all_people("John", 50, 0)
+```
+
+#### `get_person(person_id: str)`
+Get detailed information about a specific person.
+
+**Parameters:**
+- `person_id` (str): The unique identifier of the person to retrieve
+
+**Returns:** JSON string containing person details
+
+**Example:**
+```python
+person = await tools.get_person("550e8400-e29b-41d4-a716-446655440000")
+```
+
+#### `get_person_statistics(person_id: str)`
+Get statistics for a specific person.
+
+**Parameters:**
+- `person_id` (str): The unique identifier of the person
+
+**Returns:** JSON string containing statistics
+
+**Example:**
+```python
+stats = await tools.get_person_statistics("550e8400-e29b-41d4-a716-446655440000")
+```
+
+#### `get_person_thumbnail(person_id: str)`
+Get thumbnail image for a specific person.
+
+**Parameters:**
+- `person_id` (str): The unique identifier of the person
+
+**Returns:** Base64 encoded thumbnail image data
+
+**Example:**
+```python
+thumbnail = await tools.get_person_thumbnail("550e8400-e29b-41d4-a716-446655440000")
+```
+
+#### `get_all_albums()`
+Retrieves all albums from your Immich library.
+
+**Returns:** JSON string containing array of album objects
+
+**Example:**
+```python
+albums = await immich_tools.get_all_albums()
+```
+
+#### `create_album(album_name: str, description: str = "", asset_ids: Optional[List[str]] = None)`
+Creates a new album.
+
+**Parameters:**
+- `album_name` (str): Name of the new album
+- `description` (str): Optional album description
+- `asset_ids` (list): Optional list of asset IDs to include
+
+**Returns:** JSON string containing created album details
+
+**Example:**
+```python
+album = await immich_tools.create_album("Summer 2024", "Beach vacation photos")
+```
+
+#### `get_album_info(album_id: str)`
+Gets information about a specific album.
+
+**Parameters:**
+- `album_id` (str): The unique identifier of the album to retrieve
+
+**Returns:** JSON string containing album details
+
+**Example:**
+```python
+album = await immich_tools.get_album_info("550e8400-e29b-41d4-a716-446655440000")
+```
+
+#### `delete_album(album_id: str)`
+Deletes an album from Immich.
+
+**Parameters:**
+- `album_id` (str): The unique identifier of the album to delete
+
+**Returns:** JSON string containing status
+
+**Example:**
+```python
+await immich_tools.delete_album("550e8400-e29b-41d4-a716-446655440000")
+```
+
+#### `add_assets_to_album(album_id: str, asset_ids: List[str])`
+Adds assets to an existing album.
+
+**Parameters:**
+- `album_id` (str): The unique identifier of the album
+- `asset_ids` (list): List of asset IDs to add
+
+**Returns:** JSON string containing results
+
+**Example:**
+```python
+results = await immich_tools.add_assets_to_album("album-uuid", ["asset-uuid-1", "asset-uuid-2"])
+```
+
+#### `remove_assets_from_album(album_id: str, asset_ids: List[str])`
+Removes assets from an album.
+
+**Parameters:**
+- `album_id` (str): The unique identifier of the album
+- `asset_ids` (list): List of asset IDs to remove
+
+**Returns:** JSON string containing results
+
+**Example:**
+```python
+results = await immich_tools.remove_assets_from_album("album-uuid", ["asset-uuid-1", "asset-uuid-2"])
+```
+
 ### API Endpoints
 
 When running the server, you can access:

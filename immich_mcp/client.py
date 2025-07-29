@@ -104,3 +104,278 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
+    async def search_metadata(self, query: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Search assets by metadata criteria.
+        
+        Args:
+            query: Search criteria including:
+                - q: Search query string
+                - type: Asset type (IMAGE, VIDEO, AUDIO, OTHER)
+                - isFavorite: Filter by favorite status
+                - isArchived: Filter by archive status
+                - exifInfo: EXIF metadata filters
+                - createdBefore/After: Date range filters
+                - personIds: Filter by person IDs
+                - location: Location-based filters
+                
+        Returns:
+            Dict[str, Any]: Search results containing assets and total count
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> results = await client.search_metadata({
+            ...     "q": "beach",
+            ...     "type": "IMAGE",
+            ...     "isFavorite": True
+            ... })
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(
+                f"{self.config.immich_base_url}/api/search/metadata",
+                headers=self.headers,
+                json=query
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def search_smart(self, query: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Smart search using AI to find assets based on natural language queries.
+        
+        Args:
+            query: Smart search query including:
+                - q: Natural language search query
+                - clip: CLIP model search
+                - type: Asset type filter
+                - limit: Maximum results to return
+                
+        Returns:
+            Dict[str, Any]: AI-powered search results
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> results = await client.search_smart({
+            ...     "q": "photos of my dog at the beach",
+            ...     "limit": 10
+            ... })
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(
+                f"{self.config.immich_base_url}/api/search/smart",
+                headers=self.headers,
+                json=query
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def search_people(self, query: str = "", limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Search for people in the photo library.
+        
+        Args:
+            query: Search query for person names
+            limit: Maximum number of results to return
+            
+        Returns:
+            List[Dict[str, Any]]: List of people matching the search criteria
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> people = await client.search_people("John", limit=10)
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {"q": query, "limit": limit}
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/search/person",
+                headers=self.headers,
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def search_places(self, query: str = "", limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Search for places and locations in the photo library.
+        
+        Args:
+            query: Search query for place names
+            limit: Maximum number of results to return
+            
+        Returns:
+            List[Dict[str, Any]]: List of places matching the search criteria
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> places = await client.search_places("beach", limit=10)
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {"q": query, "limit": limit}
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/search/places",
+                headers=self.headers,
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_search_suggestions(self, query: str = "") -> List[str]:
+        """
+        Get search suggestions based on partial queries.
+        
+        Args:
+            query: Partial search query for suggestions
+            
+        Returns:
+            List[str]: List of search suggestions
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> suggestions = await client.get_search_suggestions("be")
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {"q": query}
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/search/suggestions",
+                headers=self.headers,
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def search_random(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Get random assets from the photo library.
+        
+        Args:
+            limit: Maximum number of random assets to return
+            
+        Returns:
+            List[Dict[str, Any]]: List of random assets
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> random_assets = await client.search_random(limit=5)
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(
+                f"{self.config.immich_base_url}/api/search/random",
+                headers=self.headers,
+                json={"limit": limit}
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_all_people(self, query: str = "", limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+        """
+        Get all people from the photo library with optional filtering.
+        
+        Args:
+            query: Search query for filtering people by name
+            limit: Maximum number of people to return
+            offset: Number of people to skip for pagination
+            
+        Returns:
+            Dict[str, Any]: Response containing people list and total count
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> people = await client.get_all_people("John", 50, 0)
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {
+                "q": query,
+                "limit": limit,
+                "offset": offset
+            }
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/people",
+                headers=self.headers,
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_person(self, person_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific person.
+        
+        Args:
+            person_id: The unique identifier of the person to retrieve
+            
+        Returns:
+            Dict[str, Any]: Person object containing comprehensive information including:
+                - id: Unique person identifier
+                - name: Person's name
+                - thumbnailPath: Thumbnail image path
+                - faces: List of face instances
+                - assets: Associated assets
+                - birthDate: Birth date if available
+                - etc.
+                
+        Raises:
+            httpx.HTTPStatusError: If the API request fails (e.g., person not found)
+            httpx.RequestError: If there's a network connectivity issue
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> person = await client.get_person("550e8400-e29b-41d4-a716-446655440000")
+            >>> print(person["name"])
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/people/{person_id}",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_person_statistics(self, person_id: str) -> Dict[str, Any]:
+        """
+        Get statistics for a specific person.
+        
+        Args:
+            person_id: The unique identifier of the person
+            
+        Returns:
+            Dict[str, Any]: Statistics including:
+                - totalAssets: Total number of assets
+                - totalSize: Total size of assets
+                - oldestDate: Date of oldest asset
+                - newestDate: Date of newest asset
+                - etc.
+                
+        Example:
+            >>> client = ImmichClient(config)
+            >>> stats = await client.get_person_statistics("550e8400-e29b-41d4-a716-446655440000")
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/people/{person_id}/statistics",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_person_thumbnail(self, person_id: str) -> bytes:
+        """
+        Get thumbnail image for a specific person.
+        
+        Args:
+            person_id: The unique identifier of the person
+            
+        Returns:
+            bytes: Thumbnail image data
+            
+        Example:
+            >>> client = ImmichClient(config)
+            >>> thumbnail = await client.get_person_thumbnail("550e8400-e29b-41d4-a716-446655440000")
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/people/{person_id}/thumbnail",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.content
+
