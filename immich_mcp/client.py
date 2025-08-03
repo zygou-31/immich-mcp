@@ -110,14 +110,50 @@ class ImmichClient:
         
         Args:
             query: Search criteria including:
-                - q: Search query string
-                - type: Asset type (IMAGE, VIDEO, AUDIO, OTHER)
+                - albumIds: Filter by album IDs
+                - checksum: Filter by checksum
+                - city: Filter by city
+                - country: Filter by country
+                - createdAfter: Filter by creation date (after)
+                - createdBefore: Filter by creation date (before)
+                - description: Filter by description
+                - deviceAssetId: Filter by device asset ID
+                - deviceId: Filter by device ID
+                - encodedVideoPath: Filter by encoded video path
+                - id: Filter by asset ID
+                - isEncoded: Filter by encoded status
                 - isFavorite: Filter by favorite status
-                - isArchived: Filter by archive status
-                - exifInfo: EXIF metadata filters
-                - createdBefore/After: Date range filters
+                - isMotion: Filter by motion status
+                - isNotInAlbum: Filter by not in album
+                - isOffline: Filter by offline status
+                - lensModel: Filter by lens model
+                - libraryId: Filter by library ID
+                - make: Filter by camera make
+                - model: Filter by camera model
+                - order: Sort order (asc/desc)
+                - originalFileName: Filter by original file name
+                - originalPath: Filter by original path
+                - page: Page number for pagination
                 - personIds: Filter by person IDs
-                - location: Location-based filters
+                - previewPath: Filter by preview path
+                - q: Search query string
+                - rating: Filter by rating (-1 to 5)
+                - size: Number of items per page (1-1000)
+                - state: Filter by state
+                - tagIds: Filter by tag IDs
+                - takenAfter: Filter by taken date (after)
+                - takenBefore: Filter by taken date (before)
+                - thumbnailPath: Filter by thumbnail path
+                - trashedAfter: Filter by trashed date (after)
+                - trashedBefore: Filter by trashed date (before)
+                - type: Asset type (IMAGE, VIDEO, AUDIO, OTHER)
+                - updatedAfter: Filter by updated date (after)
+                - updatedBefore: Filter by updated date (before)
+                - visibility: Filter by visibility (archive, timeline, hidden, locked)
+                - withDeleted: Include deleted assets
+                - withExif: Include EXIF data
+                - withPeople: Include people data
+                - withStacked: Include stacked assets
                 
         Returns:
             Dict[str, Any]: Search results containing assets and total count
@@ -145,10 +181,39 @@ class ImmichClient:
         
         Args:
             query: Smart search query including:
-                - q: Natural language search query
-                - clip: CLIP model search
-                - type: Asset type filter
-                - limit: Maximum results to return
+                - query: Natural language search query (required)
+                - albumIds: Filter by album IDs
+                - city: Filter by city
+                - country: Filter by country
+                - createdAfter: Filter by creation date (after)
+                - createdBefore: Filter by creation date (before)
+                - deviceId: Filter by device ID
+                - isEncoded: Filter by encoded status
+                - isFavorite: Filter by favorite status
+                - isMotion: Filter by motion status
+                - isNotInAlbum: Filter by not in album
+                - isOffline: Filter by offline status
+                - language: Language for the query
+                - lensModel: Filter by lens model
+                - libraryId: Filter by library ID
+                - make: Filter by camera make
+                - model: Filter by camera model
+                - page: Page number for pagination
+                - personIds: Filter by person IDs
+                - rating: Filter by rating (-1 to 5)
+                - size: Number of items per page (1-1000)
+                - state: Filter by state
+                - tagIds: Filter by tag IDs
+                - takenAfter: Filter by taken date (after)
+                - takenBefore: Filter by taken date (before)
+                - trashedAfter: Filter by trashed date (after)
+                - trashedBefore: Filter by trashed date (before)
+                - type: Asset type filter (IMAGE, VIDEO, AUDIO, OTHER)
+                - updatedAfter: Filter by updated date (after)
+                - updatedBefore: Filter by updated date (before)
+                - visibility: Filter by visibility (archive, timeline, hidden, locked)
+                - withDeleted: Include deleted assets
+                - withExif: Include EXIF data
                 
         Returns:
             Dict[str, Any]: AI-powered search results
@@ -156,7 +221,7 @@ class ImmichClient:
         Example:
             >>> client = ImmichClient(config)
             >>> results = await client.search_smart({
-            ...     "q": "photos of my dog at the beach",
+            ...     "query": "photos of my dog at the beach",
             ...     "limit": 10
             ... })
         """
@@ -169,13 +234,14 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
-    async def search_people(self, query: str = "", limit: int = 100) -> List[Dict[str, Any]]:
+    async def search_people(self, query: str = "", limit: int = 100, with_hidden: bool = None) -> List[Dict[str, Any]]:
         """
         Search for people in the photo library.
         
         Args:
             query: Search query for person names
             limit: Maximum number of results to return
+            with_hidden: Include hidden people in the results
             
         Returns:
             List[Dict[str, Any]]: List of people matching the search criteria
@@ -185,7 +251,9 @@ class ImmichClient:
             >>> people = await client.search_people("John", limit=10)
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            params = {"q": query, "limit": limit}
+            params = {"name": query, "limit": limit}
+            if with_hidden is not None:
+                params["withHidden"] = with_hidden
             response = await client.get(
                 f"{self.config.immich_base_url}/api/search/person",
                 headers=self.headers,
