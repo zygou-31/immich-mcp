@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  immich-mcp:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped

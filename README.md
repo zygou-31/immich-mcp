@@ -111,34 +111,70 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Docker Usage
+### Docker
+
+This project includes a `Dockerfile` and `docker-compose.yml` for easy containerization.
+
+#### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/) (if using `docker-compose.yml`)
+
+#### Building the Docker Image
+
+To build the Docker image, run the following command from the project root:
 
 ```bash
-# Build the Docker image
 docker build -t immich-mcp .
+```
 
-# Run with environment variables
+#### Running with Docker
+
+You can run the container using `docker run`. You'll need to provide the required environment variables.
+
+```bash
 docker run -d \
+  --name immich-mcp-container \
   -p 8000:8000 \
-  -e IMMICH_BASE_URL=https://your-immich-server.com/api \
-  -e IMMICH_API_KEY=your-api-key \
+  -e IMMICH_BASE_URL="https://your-immich-server.com/api" \
+  -e IMMICH_API_KEY="your-api-key" \
   immich-mcp
 ```
 
-### Docker Compose
+#### Running with Docker Compose
 
-```yaml
-version: '3.8'
-services:
-  immich-mcp:
-    image: immich-mcp:latest
-    ports:
-      - "8000:8000"
-    environment:
-      - IMMICH_BASE_URL=https://your-immich-server.com/api
-      - IMMICH_API_KEY=your-api-key
-    restart: unless-stopped
-```
+For a more streamlined experience, you can use Docker Compose.
+
+1.  **Create a `.env` file:**
+
+    Copy the `.env.example` to `.env` and fill in your Immich server details.
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Your `.env` file should look like this:
+
+    ```
+    IMMICH_BASE_URL=https://your-immich-server.com/api
+    IMMICH_API_KEY=your-api-key-here
+    ```
+
+2.  **Start the service:**
+
+    Run the following command to build and start the service in detached mode:
+
+    ```bash
+    docker-compose up --build -d
+    ```
+
+3.  **Stopping the service:**
+
+    To stop the service, run:
+
+    ```bash
+    docker-compose down
+    ```
 
 ## 📖 API Reference
 
