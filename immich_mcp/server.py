@@ -1,6 +1,3 @@
-
-
-
 import logging
 from mcp.server.fastmcp import FastMCP
 from immich_mcp.config import load_config
@@ -8,6 +5,7 @@ from immich_mcp.config import load_config
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def create_mcp_server() -> FastMCP:
     """
@@ -20,10 +18,13 @@ def create_mcp_server() -> FastMCP:
 
         # Test connection during startup (async context required)
         import asyncio
+
         if asyncio.run(config.test_connection()):
             logger.info("Successfully connected to Immich API")
         else:
-            logger.warning("Could not connect to Immich API - functionality may be limited")
+            logger.warning(
+                "Could not connect to Immich API - functionality may be limited"
+            )
 
     except Exception as e:
         logger.error(f"Configuration error: {e}")
@@ -31,7 +32,7 @@ def create_mcp_server() -> FastMCP:
 
     # Create FastMCP server
     server = FastMCP(name="Immich MCP Server")
-    
+
     # Register a simple tool
     @server.tool()
     def greet(name: str) -> str:
@@ -43,9 +44,9 @@ def create_mcp_server() -> FastMCP:
 
     return server
 
+
 if __name__ == "__main__":
     server = create_mcp_server()
     print("Starting MCP server...")
     # Run the server using stdio transport
     server.run("stdio")
-

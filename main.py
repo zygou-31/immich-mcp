@@ -1,25 +1,22 @@
-
 from mcp.server.fastmcp.server import FastMCP as ToolServer
 from mcp.server.fastmcp.tools.base import Tool
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+import httpx
 
 from immich_mcp.client import ImmichClient
 
 from immich_mcp.config import ImmichConfig
 import asyncio
-from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
 
-import httpx
-
 # Load configuration and test connection on startup
 try:
-    print(f"Loaded environment variables:")
+    print("Loaded environment variables:")
     print(f"  IMMICH_BASE_URL: {os.getenv('IMMICH_BASE_URL')}")
     print(f"  IMMICH_API_KEY: {os.getenv('IMMICH_API_KEY')}")
     print(f"  IMMICH_TIMEOUT: {os.getenv('IMMICH_TIMEOUT')}")
@@ -38,6 +35,7 @@ except Exception as e:
 
 # Create a single ImmichClient instance
 immich_client = ImmichClient(config)
+
 
 class ImmichTools:
     def __init__(self, client: ImmichClient):
@@ -73,13 +71,17 @@ class ImmichTools:
         except httpx.RequestError as e:
             return f"Network error getting asset info: {e}"
 
-    async def search_photos(self, query: str, limit: int = 20, album_id: str = None) -> str:
+    async def search_photos(
+        self, query: str, limit: int = 20, album_id: str = None
+    ) -> str:
         """Searches for photos in Immich."""
         try:
             response = await self.client.search_smart(query, limit, album_id)
             return response.json()
         except httpx.HTTPStatusError as e:
-            return f"Error searching photos: {e.response.status_code} - {e.response.text}"
+            return (
+                f"Error searching photos: {e.response.status_code} - {e.response.text}"
+            )
         except httpx.RequestError as e:
             return f"Network error searching photos: {e}"
 
@@ -89,13 +91,17 @@ class ImmichTools:
             response = await self.client.upload_asset(file_path, album_id)
             return response.json()
         except httpx.HTTPStatusError as e:
-            return f"Error uploading photo: {e.response.status_code} - {e.response.text}"
+            return (
+                f"Error uploading photo: {e.response.status_code} - {e.response.text}"
+            )
         except httpx.RequestError as e:
             return f"Network error uploading photo: {e}"
         except FileNotFoundError as e:
             return str(e)
-            
-    async def create_album(self, album_name: str, description: str = "", assets: list = []) -> str:
+
+    async def create_album(
+        self, album_name: str, description: str = "", assets: list = []
+    ) -> str:
         """Creates a new album in Immich."""
         try:
             response = await self.client.create_album(album_name, description, assets)
@@ -104,6 +110,7 @@ class ImmichTools:
             return f"Error creating album: {e.response.status_code} - {e.response.text}"
         except httpx.RequestError as e:
             return f"Network error creating album: {e}"
+
 
 # Create an instance of ImmichTools with the shared client
 immich_tools = ImmichTools(immich_client)
@@ -123,8 +130,9 @@ tool_server = ToolServer(
 )
 
 # FastMCP creates its own Starlette app; mount it to FastAPI
-app.mount("/", tool_server.streamable_http_app()) 
+app.mount("/", tool_server.streamable_http_app())
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

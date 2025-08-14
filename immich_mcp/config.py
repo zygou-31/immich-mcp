@@ -1,4 +1,3 @@
-
 import os
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,21 +11,22 @@ if os.getenv("TESTING") != "true":
 
 logger = logging.getLogger(__name__)
 
+
 class ImmichConfig(BaseSettings):
     """
     Configuration class for Immich MCP server with Pydantic validation.
-    
+
     This class manages all configuration settings for the Immich MCP server,
     including server connection details, authentication credentials, and
     operational parameters. It provides automatic validation and type checking
     for all configuration values.
-    
+
     Attributes:
         immich_base_url: Base URL of the Immich API server
         immich_api_key: API key for authenticating with Immich
         immich_timeout: HTTP request timeout in seconds
         immich_max_retries: Maximum number of retry attempts for failed requests
-        
+
     Example:
         >>> config = ImmichConfig(
         ...     immich_base_url="https://immich.example.com/api",
@@ -37,9 +37,9 @@ class ImmichConfig(BaseSettings):
     """
 
     immich_base_url: HttpUrl = Field(
-        ..., 
-        env="IMMICH_BASE_URL", 
-        description="Base URL of the Immich API server (must end with /api)"
+        ...,
+        env="IMMICH_BASE_URL",
+        description="Base URL of the Immich API server (must end with /api)",
     )
     immich_api_key: str = Field(
         ...,
@@ -53,26 +53,26 @@ class ImmichConfig(BaseSettings):
         env="IMMICH_TIMEOUT",
         description="HTTP request timeout in seconds",
         ge=5,
-        le=300
+        le=300,
     )
     immich_max_retries: int = Field(
         default=3,
         env="IMMICH_MAX_RETRIES",
         description="Maximum number of retry attempts for failed requests",
         ge=0,
-        le=10
+        le=10,
     )
 
     async def test_connection(self) -> bool:
         """
         Test connectivity to the Immich API server.
-        
+
         This method performs a lightweight health check to verify that the
         configured Immich server is accessible and responding correctly.
-        
+
         Returns:
             bool: True if connection is successful, False otherwise
-            
+
         Example:
             >>> config = ImmichConfig(...)
             >>> if await config.test_connection():
@@ -84,7 +84,7 @@ class ImmichConfig(BaseSettings):
             async with httpx.AsyncClient(
                 base_url=str(self.immich_base_url),
                 headers={"x-api-key": self.immich_api_key},
-                timeout=self.immich_timeout
+                timeout=self.immich_timeout,
             ) as client:
 
                 # Test a simple endpoint that should be available if the server is up
@@ -109,21 +109,22 @@ class ImmichConfig(BaseSettings):
         },
     )
 
+
 def load_config() -> ImmichConfig:
     """
     Load and validate the configuration from environment variables.
-    
+
     This function loads configuration from environment variables and .env files,
     performs validation using Pydantic, and returns a validated configuration
     instance. It provides helpful error messages if validation fails.
-    
+
     Returns:
         ImmichConfig: Validated configuration instance ready for use
-        
+
     Raises:
         ValidationError: If configuration validation fails, with detailed
                         error messages about what went wrong
-                        
+
     Example:
         >>> try:
         ...     config = load_config()
