@@ -1,6 +1,6 @@
 # Immich MCP Server
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-green.svg)](https://fastapi.tiangolo.com/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-orange.svg)](https://modelcontextprotocol.io/)
 
@@ -31,7 +31,7 @@ A production-ready Model Context Protocol (MCP) server for the Immich photo mana
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - Immich server instance (v1.90.0+)
 - Immich API key (obtain from your Immich server settings)
 
