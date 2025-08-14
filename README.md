@@ -663,6 +663,30 @@ IMMICH_API_KEY=production-key
 IMMICH_TIMEOUT=30
 ```
 
+## CI/CD
+
+This project uses GitHub Actions for CI/CD. The workflow is defined in `.github/workflows/ci.yml` and includes the following jobs:
+
+### Lint & Test
+
+This job runs on every push and pull request to the `main` branch. It performs the following checks:
+- Lints the code with `ruff`.
+- Checks code formatting with `black`.
+- Runs the test suite with `pytest` against multiple Python versions.
+
+### Publish to Docker Hub
+
+This job runs automatically when a new release is created on GitHub. It builds the Docker image and publishes it to [Docker Hub](https://hub.docker.com/r/zygou/immich-mcp).
+
+The image is tagged with the release version (e.g., `v1.0.0`) and `latest`.
+
+#### Configuring Secrets
+
+To allow the workflow to publish to your Docker Hub repository, you need to configure the following secrets in your GitHub repository settings under `Settings` > `Secrets and variables` > `Actions`:
+
+- `DOCKERHUB_USERNAME`: Your Docker Hub username.
+- `DOCKERHUB_TOKEN`: A Docker Hub Personal Access Token (PAT) with read/write permissions.
+
 ## 🔧 Troubleshooting
 
 ### Common Issues
