@@ -67,5 +67,9 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         pip install build twine
+        # Update the version in pyproject.toml
+        # The version in the tag can be with or without a "v" prefix, so we remove it
+        VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+        sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
         python -m build
         twine upload dist/*
