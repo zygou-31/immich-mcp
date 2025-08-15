@@ -2,7 +2,6 @@ from mcp.server.fastmcp.server import FastMCP as ToolServer
 from mcp.server.fastmcp.tools.base import Tool
 from fastapi import FastAPI
 from dotenv import load_dotenv
-import os
 import httpx
 
 from immich_mcp.client import ImmichClient
@@ -12,26 +11,27 @@ import asyncio
 
 load_dotenv()
 
-app = FastAPI()
 
 # Load configuration and test connection on startup
 try:
-    print("Loaded environment variables:")
-    print(f"  IMMICH_BASE_URL: {os.getenv('IMMICH_BASE_URL')}")
-    print(f"  IMMICH_API_KEY: {os.getenv('IMMICH_API_KEY')}")
-    print(f"  IMMICH_TIMEOUT: {os.getenv('IMMICH_TIMEOUT')}")
-    print(f"  IMMICH_MAX_RETRIES: {os.getenv('IMMICH_MAX_RETRIES')}")
-    config = ImmichConfig(
-        base_url=os.getenv("IMMICH_BASE_URL"),
-        api_key=os.getenv("IMMICH_API_KEY"),
-        timeout=int(os.getenv("IMMICH_TIMEOUT", 30)),
-        max_retries=int(os.getenv("IMMICH_MAX_RETRIES", 3)),
+    config = ImmichConfig()
+    print("Loaded configuration:")
+    print(f"  IMMICH_BASE_URL: {config.immich_base_url}")
+    print(
+        f"  IMMICH_API_KEY: {'*' * (len(config.immich_api_key) - 4) + config.immich_api_key[-4:]}"
     )
+    print(f"  IMMICH_TIMEOUT: {config.immich_timeout}")
+    print(f"  IMMICH_MAX_RETRIES: {config.immich_max_retries}")
+    print(f"  MCP_PORT: {config.mcp_port}")
+    print(f"  MCP_BASE_URL: {config.mcp_base_url}")
+
     if not asyncio.run(config.test_connection()):
         raise ValueError("Immich API connection test failed.")
 except Exception as e:
     print(f"Configuration error: {e}")
     exit(1)
+
+app = FastAPI(root_path=config.mcp_base_url)
 
 # Create a single ImmichClient instance
 immich_client = ImmichClient(config)
@@ -135,4 +135,4 @@ app.mount("/", tool_server.streamable_http_app())
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=config.mcp_port)

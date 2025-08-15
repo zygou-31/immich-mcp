@@ -3,7 +3,7 @@ services:
   immich-mcp:
     build: .
     ports:
-      - "8000:8000"
+      - "${MCP_PORT:-8626}:8626"
     env_file:
       - .env
     restart: unless-stopped
