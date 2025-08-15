@@ -17,7 +17,9 @@ try:
     config = ImmichConfig()
     print("Loaded configuration:")
     print(f"  IMMICH_BASE_URL: {config.immich_base_url}")
-    print(f"  IMMICH_API_KEY: {'*' * (len(config.immich_api_key) - 4) + config.immich_api_key[-4:]}")
+    print(
+        f"  IMMICH_API_KEY: {'*' * (len(config.immich_api_key) - 4) + config.immich_api_key[-4:]}"
+    )
     print(f"  IMMICH_TIMEOUT: {config.immich_timeout}")
     print(f"  IMMICH_MAX_RETRIES: {config.immich_max_retries}")
     print(f"  MCP_PORT: {config.mcp_port}")
