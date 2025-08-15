@@ -11,7 +11,6 @@ import asyncio
 
 load_dotenv()
 
-app = FastAPI()
 
 # Load configuration and test connection on startup
 try:
@@ -22,12 +21,15 @@ try:
     print(f"  IMMICH_TIMEOUT: {config.immich_timeout}")
     print(f"  IMMICH_MAX_RETRIES: {config.immich_max_retries}")
     print(f"  MCP_PORT: {config.mcp_port}")
+    print(f"  MCP_BASE_URL: {config.mcp_base_url}")
 
     if not asyncio.run(config.test_connection()):
         raise ValueError("Immich API connection test failed.")
 except Exception as e:
     print(f"Configuration error: {e}")
     exit(1)
+
+app = FastAPI(root_path=config.mcp_base_url)
 
 # Create a single ImmichClient instance
 immich_client = ImmichClient(config)

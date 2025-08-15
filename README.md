@@ -88,6 +88,8 @@ IMMICH_MAX_RETRIES=3
 | `IMMICH_API_KEY` | ✅ | - | API key from Immich server settings |
 | `IMMICH_TIMEOUT` | ❌ | 30 | HTTP request timeout in seconds |
 | `IMMICH_MAX_RETRIES` | ❌ | 3 | Maximum retry attempts for failed requests |
+| `MCP_PORT` | ❌ | 8626 | Port to run the MCP server on |
+| `MCP_BASE_URL` | ❌ | "" | Base URL (subpath) for reverse proxy setups |
 
 ### Getting Your API Key
 
@@ -644,6 +646,84 @@ Enable and start:
 sudo systemctl enable immich-mcp
 sudo systemctl start immich-mcp
 ```
+
+### Reverse Proxy Setup
+
+If you want to run the Immich MCP server behind a reverse proxy under a subpath (e.g., `https://your-domain.com/mcp`), you can use the `MCP_BASE_URL` environment variable.
+
+Set `MCP_BASE_URL` to the desired subpath, for example, `/mcp`.
+
+#### Docker Compose with Caddy
+
+Here's an example of how to use it with Caddy as a reverse proxy in a `docker-compose.yml` file.
+
+1.  **Update your `.env` file:**
+
+    Add `MCP_BASE_URL` to your `.env` file:
+
+    ```
+    IMMICH_BASE_URL=https://your-immich-server.com/api
+    IMMICH_API_KEY=your-api-key-here
+    MCP_PORT=8626
+    MCP_BASE_URL=/mcp
+    ```
+
+2.  **Update your `docker-compose.yml`:**
+
+    Add a Caddy service to your `docker-compose.yml` and make sure both services are on the same network.
+
+    ```yaml
+    version: '3.8'
+
+    services:
+      immich-mcp:
+        build: .
+        env_file: .env
+        restart: unless-stopped
+        networks:
+          - mcp-net
+
+      caddy:
+        image: caddy:2-alpine
+        restart: unless-stopped
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - ./Caddyfile:/etc/caddy/Caddyfile
+          - caddy_data:/data
+          - caddy_config:/config
+        networks:
+          - mcp-net
+
+    networks:
+      mcp-net:
+
+    volumes:
+      caddy_data:
+      caddy_config:
+    ```
+
+3.  **Create a `Caddyfile`:**
+
+    Create a file named `Caddyfile` in the same directory with the following content:
+
+    ```
+    your-domain.com {
+        handle_path /mcp/* {
+            reverse_proxy immich-mcp:8626 {
+                header_up Host {host}
+                header_up X-Real-IP {remote_ip}
+                header_up X-Forwarded-For {remote_ip}
+                header_up X-Forwarded-Proto {scheme}
+            }
+        }
+
+        # Other services you might be running
+    }
+    ```
+
+With this setup, the Immich MCP server will be available at `https://your-domain.com/mcp`, and the API documentation will be correctly served at `https://your-domain.com/mcp/docs`.
 
 ### Environment-Specific Configuration
 

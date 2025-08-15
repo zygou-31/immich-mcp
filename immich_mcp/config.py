@@ -71,17 +71,11 @@ class ImmichConfig(BaseSettings):
         ge=1024,
         le=65535,
     )
-    # Other interesting configurable options could be:
-    # mcp_base_url: str = Field(
-    #     default="",
-    #     env="MCP_BASE_URL",
-    #     description="Base URL for the MCP server, for reverse proxy use",
-    # )
-    # mcp_log_level: str = Field(
-    #     default="INFO",
-    #     env="MCP_LOG_LEVEL",
-    #     description="Logging level for the MCP server",
-    # )
+    mcp_base_url: str = Field(
+        default="",
+        env="MCP_BASE_URL",
+        description="Base URL for the MCP server, for reverse proxy use",
+    )
 
     async def test_connection(self) -> bool:
         """
@@ -126,6 +120,7 @@ class ImmichConfig(BaseSettings):
                 "immich_timeout": "IMMICH_TIMEOUT",
                 "immich_max_retries": "IMMICH_MAX_RETRIES",
                 "mcp_port": "MCP_PORT",
+                "mcp_base_url": "MCP_BASE_URL",
             }
         },
     )
