@@ -63,6 +63,26 @@ class ImmichConfig(BaseSettings):
         le=10,
     )
 
+    # Server settings
+    mcp_port: int = Field(
+        default=8626,
+        env="MCP_PORT",
+        description="Port to run the MCP server on",
+        ge=1024,
+        le=65535,
+    )
+    # Other interesting configurable options could be:
+    # mcp_base_url: str = Field(
+    #     default="",
+    #     env="MCP_BASE_URL",
+    #     description="Base URL for the MCP server, for reverse proxy use",
+    # )
+    # mcp_log_level: str = Field(
+    #     default="INFO",
+    #     env="MCP_LOG_LEVEL",
+    #     description="Logging level for the MCP server",
+    # )
+
     async def test_connection(self) -> bool:
         """
         Test connectivity to the Immich API server.
@@ -105,6 +125,7 @@ class ImmichConfig(BaseSettings):
                 "immich_api_key": "IMMICH_API_KEY",
                 "immich_timeout": "IMMICH_TIMEOUT",
                 "immich_max_retries": "IMMICH_MAX_RETRIES",
+                "mcp_port": "MCP_PORT",
             }
         },
     )
