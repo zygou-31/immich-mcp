@@ -2,9 +2,9 @@
 [project]
 name = "immich-mcp"
 version = "0.1.0"
-description = "Model Context Protocol (MCP) server for Immich API"
+description = "A server that implements the Model Context Protocol (MCP) for the Immich API. This allows you to use tools that interact with Immich through a standardized interface."
 authors = [
-    { name = "OpenHands", email = "openhands@all-hands.dev" }
+    { name = "Jérôme Zeghoudi", email = "jerome.zeghoudi@gmail.com" }
 ]
 dependencies = [
     "mcp",
