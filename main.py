@@ -2,7 +2,6 @@ from mcp.server.fastmcp.server import FastMCP as ToolServer
 from mcp.server.fastmcp.tools.base import Tool
 from fastapi import FastAPI
 from dotenv import load_dotenv
-import os
 import httpx
 
 from immich_mcp.client import ImmichClient
