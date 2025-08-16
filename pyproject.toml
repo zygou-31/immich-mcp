@@ -40,6 +40,16 @@ env = [
     "TESTING=true",
 ]
 
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+
 [tool.uvicorn.server]
 host = "0.0.0.0"
 port = 8000
