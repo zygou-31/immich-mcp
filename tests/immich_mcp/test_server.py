@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock, AsyncMock
 
 from main import create_app
 
+
 @pytest.fixture
 def client():
     with patch("main.load_config") as mock_load_config:
@@ -17,24 +18,26 @@ def client():
         # Mock the lifespan function to return a proper async context manager
         async def mock_lifespan(app):
             app.state.config = mock_config
-            
+
             # Create a mock tool server that returns a simple response
             from fastapi import FastAPI
+
             mock_mcp_app = FastAPI()
-            
+
             @mock_mcp_app.post("/")
             async def tools_list():
                 return {"jsonrpc": "2.0", "id": 1, "result": {"tools": []}}
-            
+
             # Mount the mock MCP app
             app.mount("/mcp", mock_mcp_app)
             yield
-        
+
         # Patch the lifespan in the create_app function
         with patch("main.lifespan", mock_lifespan):
             app = create_app()
             with TestClient(app) as client:
                 yield client
+
 
 def test_tools_list(client):
     response = client.post(
@@ -51,15 +54,13 @@ def test_tools_list(client):
     # The actual MCP server implementation can be tested separately
     assert response.status_code == 200
 
+
 def test_auth_valid_token(client):
-    response = client.get(
-        "/", headers={"Authorization": "Bearer test_token"}
-    )
+    response = client.get("/", headers={"Authorization": "Bearer test_token"})
     assert response.status_code == 200
 
+
 def test_auth_invalid_token(client):
-    response = client.get(
-        "/", headers={"Authorization": "Bearer invalid_token"}
-    )
+    response = client.get("/", headers={"Authorization": "Bearer invalid_token"})
     assert response.status_code == 401
     assert response.json() == {"detail": "Invalid token"}

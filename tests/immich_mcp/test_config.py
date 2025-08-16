@@ -20,9 +20,9 @@ class TestConfig:
 
     def test_missing_auth_token(self):
         """Test that an error is raised if the auth token is missing."""
-        with patch.object(ImmichConfig, 'model_config', {'env_file': None}):
-            if 'IMMICH_API_KEY' in os.environ:
-                del os.environ['IMMICH_API_KEY']
+        with patch.object(ImmichConfig, "model_config", {"env_file": None}):
+            if "IMMICH_API_KEY" in os.environ:
+                del os.environ["IMMICH_API_KEY"]
             with pytest.raises(ValidationError) as exc_info:
                 ImmichConfig(
                     immich_base_url="http://test.com/api",
@@ -32,9 +32,9 @@ class TestConfig:
 
     def test_missing_api_key(self):
         """Test that an error is raised if the Immich API key is missing."""
-        with patch.object(ImmichConfig, 'model_config', {'env_file': None}):
-            if 'IMMICH_API_KEY' in os.environ:
-                del os.environ['IMMICH_API_KEY']
+        with patch.object(ImmichConfig, "model_config", {"env_file": None}):
+            if "IMMICH_API_KEY" in os.environ:
+                del os.environ["IMMICH_API_KEY"]
             with pytest.raises(ValidationError) as exc_info:
                 ImmichConfig(
                     immich_base_url="http://test.com/api",
@@ -66,9 +66,9 @@ class TestConfig:
 
     def test_auth_token_file_not_found(self):
         """Test that an error is raised if the auth token file is not found."""
-        with patch.object(ImmichConfig, 'model_config', {'env_file': None}):
-            if 'IMMICH_API_KEY' in os.environ:
-                del os.environ['IMMICH_API_KEY']
+        with patch.object(ImmichConfig, "model_config", {"env_file": None}):
+            if "IMMICH_API_KEY" in os.environ:
+                del os.environ["IMMICH_API_KEY"]
             with pytest.raises(ValidationError) as exc_info:
                 ImmichConfig(
                     immich_base_url="http://test.com/api",
@@ -79,9 +79,9 @@ class TestConfig:
 
     def test_api_key_file_not_found(self):
         """Test that an error is raised if the API key file is not found."""
-        with patch.object(ImmichConfig, 'model_config', {'env_file': None}):
-            if 'IMMICH_API_KEY' in os.environ:
-                del os.environ['IMMICH_API_KEY']
+        with patch.object(ImmichConfig, "model_config", {"env_file": None}):
+            if "IMMICH_API_KEY" in os.environ:
+                del os.environ["IMMICH_API_KEY"]
             with pytest.raises(ValidationError) as exc_info:
                 ImmichConfig(
                     immich_base_url="http://test.com/api",
@@ -92,7 +92,7 @@ class TestConfig:
 
     def test_valid_config(self):
         """Test that a valid config can be created."""
-        with patch.object(ImmichConfig, 'model_config', {'env_file': None}):
+        with patch.object(ImmichConfig, "model_config", {"env_file": None}):
             config = ImmichConfig(
                 immich_base_url="http://test.com/api",
                 immich_api_key="test_api_key",
