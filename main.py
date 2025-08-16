@@ -1,40 +1,90 @@
 from mcp.server.fastmcp.server import FastMCP as ToolServer
 from mcp.server.fastmcp.tools.base import Tool
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status, Request, APIRouter
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 import httpx
+import logging
+from contextlib import asynccontextmanager
 
 from immich_mcp.client import ImmichClient
+from immich_mcp.config import ImmichConfig, load_config
 
-from immich_mcp.config import ImmichConfig
-import asyncio
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+# Global variable for config
+config: ImmichConfig = None
+app = FastAPI()
 
-# Load configuration and test connection on startup
-try:
-    config = ImmichConfig()
-    print("Loaded configuration:")
-    print(f"  IMMICH_BASE_URL: {config.immich_base_url}")
-    print(
-        f"  IMMICH_API_KEY: {'*' * (len(config.immich_api_key) - 4) + config.immich_api_key[-4:]}"
-    )
-    print(f"  IMMICH_TIMEOUT: {config.immich_timeout}")
-    print(f"  IMMICH_MAX_RETRIES: {config.immich_max_retries}")
-    print(f"  MCP_PORT: {config.mcp_port}")
-    print(f"  MCP_BASE_URL: {config.mcp_base_url}")
 
-    if not asyncio.run(config.test_connection()):
-        raise ValueError("Immich API connection test failed.")
-except Exception as e:
-    print(f"Configuration error: {e}")
-    exit(1)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Handle startup and shutdown events.
+    """
+    global config
+    try:
+        config = load_config()
+        app.state.config = config
+        logger.info("Configuration loaded successfully")
+        if not await config.test_connection():
+            raise ValueError("Immich API connection test failed.")
 
-app = FastAPI(root_path=config.mcp_base_url)
+        # Create and attach the Immich client
+        immich_client = ImmichClient(config)
+        app.state.immich_client = immich_client
 
-# Create a single ImmichClient instance
-immich_client = ImmichClient(config)
+        # Create and attach the tools
+        immich_tools = ImmichTools(immich_client)
+        app.state.immich_tools = immich_tools
+
+        # Create and mount the tool server
+        tool_server = ToolServer(
+            name="immich-mcp-server",
+            instructions="MCP server for Immich API with tools for pinging, albums, assets, search, and uploads.",
+            tools=[
+                Tool.from_function(immich_tools.ping_server),
+                Tool.from_function(immich_tools.get_all_albums),
+                Tool.from_function(immich_tools.get_asset_info),
+                Tool.from_function(immich_tools.search_photos),
+                Tool.from_function(immich_tools.upload_photo),
+                Tool.from_function(immich_tools.create_album),
+            ],
+        )
+        app.mount("/", tool_server.streamable_http_app())
+
+        yield
+    except Exception as e:
+        logger.error(f"Startup error: {e}")
+        raise
+
+
+# Security scheme
+auth_scheme = HTTPBearer()
+
+
+# Dependency to verify the token
+def verify_token(
+    request: Request, credentials: HTTPAuthorizationCredentials = Depends(auth_scheme)
+):
+    config = request.app.state.config
+    if not credentials or credentials.scheme != "Bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication scheme",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if credentials.credentials != config.auth_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return credentials
 
 
 class ImmichTools:
@@ -112,27 +162,24 @@ class ImmichTools:
             return f"Network error creating album: {e}"
 
 
-# Create an instance of ImmichTools with the shared client
-immich_tools = ImmichTools(immich_client)
+def create_app() -> FastAPI:
+    """
+    Create and configure the FastAPI application.
+    """
+    app = FastAPI(
+        lifespan=lifespan,
+    )
+    router = APIRouter()
+    router.add_api_route(
+        "/", lambda: {"message": "Hello World"}, dependencies=[Depends(verify_token)]
+    )
+    app.include_router(router)
+    return app
 
-tool_server = ToolServer(
-    name="immich-mcp-server",
-    instructions="MCP server for Immich API with tools for pinging, albums, assets, search, and uploads.",
-    version="0.1.0",
-    tools=[
-        Tool.from_function(immich_tools.ping_server),
-        Tool.from_function(immich_tools.get_all_albums),
-        Tool.from_function(immich_tools.get_asset_info),
-        Tool.from_function(immich_tools.search_photos),
-        Tool.from_function(immich_tools.upload_photo),
-        Tool.from_function(immich_tools.create_album),
-    ],
-)
 
-# FastMCP creates its own Starlette app; mount it to FastAPI
-app.mount("/", tool_server.streamable_http_app())
+app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=config.mcp_port)
+    uvicorn.run(app, host="0.0.0.0", port=8626)

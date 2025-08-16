@@ -10,6 +10,7 @@ def immich_config():
     return ImmichConfig(
         immich_base_url="http://immich.test/api",
         immich_api_key="test-key-is-now-long-enough",
+        auth_token="test_auth_token",
     )
 
 

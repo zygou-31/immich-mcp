@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, HttpUrl, ValidationError
+from pydantic import Field, HttpUrl, ValidationError, model_validator
+from typing import Optional
 import logging
 import httpx
 
@@ -15,49 +16,30 @@ logger = logging.getLogger(__name__)
 class ImmichConfig(BaseSettings):
     """
     Configuration class for Immich MCP server with Pydantic validation.
-
-    This class manages all configuration settings for the Immich MCP server,
-    including server connection details, authentication credentials, and
-    operational parameters. It provides automatic validation and type checking
-    for all configuration values.
-
-    Attributes:
-        immich_base_url: Base URL of the Immich API server
-        immich_api_key: API key for authenticating with Immich
-        immich_timeout: HTTP request timeout in seconds
-        immich_max_retries: Maximum number of retry attempts for failed requests
-
-    Example:
-        >>> config = ImmichConfig(
-        ...     immich_base_url="https://immich.example.com/api",
-        ...     immich_api_key="your-api-key-here"
-        ... )
-        >>> print(config.immich_base_url)
-        https://immich.example.com/api
     """
 
     immich_base_url: HttpUrl = Field(
         ...,
-        env="IMMICH_BASE_URL",
         description="Base URL of the Immich API server (must end with /api)",
     )
-    immich_api_key: str = Field(
-        ...,
-        env="IMMICH_API_KEY",
+    immich_api_key: Optional[str] = Field(
+        default=None,
         description="API key for authenticating with Immich",
         min_length=10,
         max_length=100,
     )
+    immich_api_key_file: Optional[str] = Field(
+        default=None,
+        description="Path to a file containing the Immich API key",
+    )
     immich_timeout: int = Field(
         default=30,
-        env="IMMICH_TIMEOUT",
         description="HTTP request timeout in seconds",
         ge=5,
         le=300,
     )
     immich_max_retries: int = Field(
         default=3,
-        env="IMMICH_MAX_RETRIES",
         description="Maximum number of retry attempts for failed requests",
         ge=0,
         le=10,
@@ -66,16 +48,55 @@ class ImmichConfig(BaseSettings):
     # Server settings
     mcp_port: int = Field(
         default=8626,
-        env="MCP_PORT",
         description="Port to run the MCP server on",
         ge=1024,
         le=65535,
     )
     mcp_base_url: str = Field(
         default="",
-        env="MCP_BASE_URL",
         description="Base URL for the MCP server, for reverse proxy use",
     )
+
+    # Auth settings
+    auth_token: Optional[str] = Field(
+        default=None,
+        min_length=10,
+        description="Bearer token for authenticating with the MCP server",
+    )
+
+    auth_token_file: Optional[str] = Field(
+        default=None,
+        description="Path to a file containing the auth token",
+    )
+
+    @model_validator(mode="after")
+    def load_secrets_from_files(self):
+        """
+        Load secrets from files if specified.
+        """
+        if self.auth_token_file:
+            try:
+                with open(self.auth_token_file, "r") as f:
+                    self.auth_token = f.read().strip()
+            except FileNotFoundError:
+                raise ValueError(f"Auth token file not found: {self.auth_token_file}")
+
+        if self.immich_api_key_file:
+            try:
+                with open(self.immich_api_key_file, "r") as f:
+                    self.immich_api_key = f.read().strip()
+            except FileNotFoundError:
+                raise ValueError(
+                    f"Immich API key file not found: {self.immich_api_key_file}"
+                )
+
+        if not self.auth_token:
+            raise ValueError("An auth token must be configured")
+
+        if not self.immich_api_key:
+            raise ValueError("An Immich API key must be configured")
+
+        return self
 
     async def test_connection(self) -> bool:
         """
@@ -100,7 +121,6 @@ class ImmichConfig(BaseSettings):
                 headers={"x-api-key": self.immich_api_key},
                 timeout=self.immich_timeout,
             ) as client:
-
                 # Test a simple endpoint that should be available if the server is up
                 response = await client.get("/server-info/ping")
                 return response.status_code == 200
