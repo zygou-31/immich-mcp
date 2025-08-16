@@ -18,23 +18,24 @@ This document provides comprehensive usage examples for the Immich MCP server, c
 ```bash
 # Quick start with environment variables
 export IMMICH_BASE_URL=https://your-immich-server.com/api
-export IMMICH_API_KEY=your-api-key
-python -m immich_mcp.server
+export IMMICH_API_KEY=your-immich-api-key
+export AUTH_TOKEN=your-secret-auth-token
+python -m main
 
 # Using .env file
 cp .env.example .env
 # Edit .env with your values
-python -m immich_mcp.server
+python -m main
 ```
 
 ### Health Check
 
 ```bash
-# Check if server is running
-curl http://localhost:8000/health
+# Check if server is running (will fail without auth)
+curl -H "Authorization: Bearer your-secret-auth-token" http://localhost:8626/health
 
 # Check API documentation
-open http://localhost:8000/docs
+open http://localhost:8626/docs
 ```
 
 ## Python Integration
@@ -50,7 +51,8 @@ async def basic_example():
     # Configure client
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     # Create client
@@ -83,7 +85,8 @@ async def tools_example():
     # Configure
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     # Use tools with async context manager
@@ -116,10 +119,11 @@ Create `claude_desktop_config.json`:
   "mcpServers": {
     "immich": {
       "command": "python",
-      "args": ["-m", "immich_mcp.server"],
+      "args": ["-m", "main"],
       "env": {
         "IMMICH_BASE_URL": "https://your-immich-server.com/api",
-        "IMMICH_API_KEY": "your-api-key"
+        "IMMICH_API_KEY": "your-immich-api-key",
+        "AUTH_TOKEN": "your-secret-auth-token"
       }
     }
   }
@@ -144,10 +148,11 @@ async def mcp_client_example():
     # Configure server parameters
     server_params = StdioServerParameters(
         command="python",
-        args=["-m", "immich_mcp.server"],
+        args=["-m", "main"],
         env={
             "IMMICH_BASE_URL": "https://your-immich-server.com/api",
-            "IMMICH_API_KEY": "your-api-key"
+            "IMMICH_API_KEY": "your-immich-api-key",
+            "AUTH_TOKEN": "your-secret-auth-token"
         }
     )
     
@@ -184,7 +189,8 @@ from immich_mcp.config import ImmichConfig
 async def batch_operations():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -221,7 +227,8 @@ from immich_mcp.config import ImmichConfig
 async def album_management():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -257,7 +264,8 @@ from immich_mcp.config import ImmichConfig
 async def smart_search():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -294,7 +302,8 @@ from immich_mcp.config import ImmichConfig
 async def people_management():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -332,7 +341,8 @@ logger = logging.getLogger(__name__)
 async def error_handling_example():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     try:
@@ -363,7 +373,8 @@ async def test_connection():
     try:
         config = ImmichConfig(
             immich_base_url="https://your-immich-server.com/api",
-            immich_api_key="your-api-key"
+            immich_api_key="your-immich-api-key",
+            auth_token="your-secret-auth-token"
         )
         
         # Test connection
@@ -391,7 +402,8 @@ from immich_mcp.config import ImmichConfig
 async def caching_example():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -423,7 +435,8 @@ from immich_mcp.config import ImmichConfig
 async def rate_limiting_example():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -463,7 +476,8 @@ app = FastAPI()
 async def startup_event():
     app.state.config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
 
 @app.get("/api/assets")
@@ -503,7 +517,8 @@ async def main():
     
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -554,8 +569,9 @@ services:
     environment:
       - IMMICH_BASE_URL=https://immich.yourdomain.com/api
       - IMMICH_API_KEY=${IMMICH_API_KEY}
+      - AUTH_TOKEN=${AUTH_TOKEN}
     ports:
-      - "8000:8000"
+      - "8626:8626"
 ```
 
 ## Troubleshooting Examples
@@ -574,7 +590,8 @@ logging.basicConfig(level=logging.DEBUG)
 async def debug_example():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     async with ImmichTools(config) as tools:
@@ -594,7 +611,8 @@ from immich_mcp.config import ImmichConfig
 async def test_all_endpoints():
     config = ImmichConfig(
         immich_base_url="https://your-immich-server.com/api",
-        immich_api_key="your-api-key"
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
     )
     
     # Test connection

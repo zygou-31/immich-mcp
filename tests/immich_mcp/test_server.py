@@ -1,68 +1,63 @@
-import pytest
-from unittest.mock import patch, MagicMock
-from immich_mcp.server import create_mcp_server
+from fastapi.testclient import TestClient
+from unittest.mock import patch, MagicMock, AsyncMock
+
+from main import create_app
 
 
-@patch("immich_mcp.server.load_config")
-class TestCreateMCP:
-    """Test cases for the create_mcp_server function."""
+class TestAuth:
+    """Test cases for API authentication."""
 
-    @patch("asyncio.run")
-    def test_create_mcp_server_success(self, mock_asyncio_run, mock_load_config):
-        """Test successful creation of MCP server."""
-        # Mock configuration
-        mock_config = MagicMock()
-        mock_load_config.return_value = mock_config
+    def test_valid_token(self):
+        """Test that a valid token is accepted."""
+        with patch("main.load_config") as mock_load_config:
+            mock_config = MagicMock()
+            mock_config.auth_token = "test_token"
+            mock_config.test_connection = AsyncMock(return_value=True)
+            mock_load_config.return_value = mock_config
+            app = create_app()
+            with TestClient(app) as client:
+                response = client.get(
+                    "/", headers={"Authorization": "Bearer test_token"}
+                )
+                assert response.status_code == 200
 
-        # Mock asyncio.run to return True (successful connection)
-        mock_asyncio_run.return_value = True
+    def test_invalid_token(self):
+        """Test that an invalid token is rejected."""
+        with patch("main.load_config") as mock_load_config:
+            mock_config = MagicMock()
+            mock_config.auth_token = "test_token"
+            mock_config.test_connection = AsyncMock(return_value=True)
+            mock_load_config.return_value = mock_config
+            app = create_app()
+            with TestClient(app) as client:
+                response = client.get(
+                    "/", headers={"Authorization": "Bearer invalid_token"}
+                )
+                assert response.status_code == 401
+                assert response.json() == {"detail": "Invalid token"}
 
-        # Create the server
-        server = create_mcp_server()
+    def test_missing_token(self):
+        """Test that a missing token is rejected."""
+        with patch("main.load_config") as mock_load_config:
+            mock_config = MagicMock()
+            mock_config.auth_token = "test_token"
+            mock_config.test_connection = AsyncMock(return_value=True)
+            mock_load_config.return_value = mock_config
+            app = create_app()
+            with TestClient(app) as client:
+                response = client.get("/")
+                assert response.status_code == 403
 
-        # Verify the server was created
-        assert server is not None
-        assert server.name == "Immich MCP Server"
-
-        # Verify config was loaded
-        mock_load_config.assert_called_once()
-
-        # Verify connection test was called
-        mock_asyncio_run.assert_called_once()
-
-    @patch("asyncio.run")
-    def test_create_mcp_server_connection_failure(
-        self, mock_asyncio_run, mock_load_config
-    ):
-        """Test MCP server creation when connection fails."""
-        # Mock configuration
-        mock_config = MagicMock()
-        mock_load_config.return_value = mock_config
-
-        # Mock asyncio.run to return False (failed connection)
-        mock_asyncio_run.return_value = False
-
-        # Create the server (should still work even with connection failure)
-        server = create_mcp_server()
-
-        # Verify the server was created
-        assert server is not None
-        assert server.name == "Immich MCP Server"
-
-        # Verify config was loaded
-        mock_load_config.assert_called_once()
-
-        # Verify connection test was called
-        mock_asyncio_run.assert_called_once()
-
-    def test_create_mcp_server_config_error(self, mock_load_config):
-        """Test MCP server creation when config loading fails."""
-        # Mock configuration loading to raise an exception
-        mock_load_config.side_effect = Exception("Config error")
-
-        # Attempt to create the server (should raise the exception)
-        with pytest.raises(Exception) as exc_info:
-            create_mcp_server()
-
-        # Verify the exception message
-        assert "Config error" in str(exc_info.value)
+    def test_invalid_scheme(self):
+        """Test that an invalid authentication scheme is rejected."""
+        with patch("main.load_config") as mock_load_config:
+            mock_config = MagicMock()
+            mock_config.auth_token = "test_token"
+            mock_config.test_connection = AsyncMock(return_value=True)
+            mock_load_config.return_value = mock_config
+            app = create_app()
+            with TestClient(app) as client:
+                response = client.get(
+                    "/", headers={"Authorization": "Basic test_token"}
+                )
+                assert response.status_code == 403
