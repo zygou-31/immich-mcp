@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 import httpx
 import logging
+import contextlib
 from contextlib import asynccontextmanager
 
 from immich_mcp.client import ImmichClient
@@ -55,9 +56,11 @@ async def lifespan(app: FastAPI):
                 Tool.from_function(immich_tools.create_album),
             ],
         )
-        app.mount("/", tool_server.streamable_http_app())
+        app.mount("/mcp", tool_server.streamable_http_app())
 
-        yield
+        async with contextlib.AsyncExitStack() as stack:
+            await stack.enter_async_context(tool_server.session_manager.run())
+            yield
     except Exception as e:
         logger.error(f"Startup error: {e}")
         raise
