@@ -107,10 +107,10 @@ IMMICH_MAX_RETRIES=3
 python -m immich_mcp.server
 
 # Or using uvicorn directly
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8626
 
 # With auto-reload for development
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8626 --reload
 ```
 
 ### Docker
@@ -137,11 +137,15 @@ You can run the container using `docker run`. You'll need to provide the require
 ```bash
 docker run -d \
   --name immich-mcp-container \
-  -p 8000:8000 \
+  -p 8626:8626 \
   -e IMMICH_BASE_URL="https://your-immich-server.com/api" \
   -e IMMICH_API_KEY="your-api-key" \
+  -e MCP_PORT="8626" \
+  -e MCP_BASE_URL="/mcp" \
   immich-mcp
 ```
+
+*Note: `MCP_PORT` and `MCP_BASE_URL` are optional.*
 
 #### Running with Docker Compose
 
@@ -610,9 +614,10 @@ docker build -t immich-mcp:latest .
 # Run with production settings
 docker run -d \
   --name immich-mcp \
-  -p 8000:8000 \
+  -p 8626:8626 \
   -e IMMICH_BASE_URL=https://your-immich-server.com/api \
   -e IMMICH_API_KEY=your-api-key \
+  -e MCP_PORT="8626" \
   --restart unless-stopped \
   immich-mcp:latest
 ```
