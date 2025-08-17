@@ -176,6 +176,7 @@ def create_app() -> FastAPI:
     router.add_api_route(
         "/", lambda: {"message": "Hello World"}, dependencies=[Depends(verify_token)]
     )
+    router.add_api_route("/health", lambda: {"status": "ok"})
     app.include_router(router)
     return app
 
