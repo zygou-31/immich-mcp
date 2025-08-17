@@ -506,9 +506,9 @@ results = await immich_tools.remove_assets_from_album("album-uuid", ["asset-uuid
 
 When running the server, you can access:
 
-- **Interactive API Docs**: http://localhost:8000/docs
-- **ReDoc Documentation**: http://localhost:8000/redoc
-- **Health Check**: http://localhost:8000/health
+- **Interactive API Docs**: http://localhost:8626/docs
+- **ReDoc Documentation**: http://localhost:8626/redoc
+- **Health Check**: http://localhost:8626/health
 
 ## 🧪 Development
 
@@ -836,17 +836,6 @@ export LOG_LEVEL=DEBUG
 python -m immich_mcp.server
 ```
 
-### Health Checks
-
-The server provides health check endpoints:
-
-```bash
-# Basic health check
-curl http://localhost:8000/health
-
-# Detailed status
-curl http://localhost:8000/health/detailed
-```
 
 ### Performance Monitoring
 
