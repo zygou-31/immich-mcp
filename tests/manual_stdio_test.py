@@ -29,6 +29,17 @@ async def run_test():
         "MCP_MODE": "stdio",
     }
 
+    # Use mock stdio server for fast tests if requested
+    use_mock = os.environ.get("USE_MOCK_STDIO", "true").lower() == "true"
+    if use_mock:
+        from tests._mock_stdio import mock_stdio_server
+
+        async with mock_stdio_server() as (r, w):
+            async with ClientSession(r, w) as session:
+                await session.initialize()
+                tools = await session.list_tools()
+                return list(tools)
+
     server_params = StdioServerParameters(
         command=sys.executable,
         args=["-m", "main", "--mode", "stdio"],
