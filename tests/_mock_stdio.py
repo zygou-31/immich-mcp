@@ -2,9 +2,7 @@ import anyio
 import sys
 from contextlib import asynccontextmanager
 from mcp.shared.message import SessionMessage
-from mcp.server.stdio import MemoryObjectReceiveStream, MemoryObjectSendStream
 from mcp.types import JSONRPCMessage
-from typing import AsyncGenerator
 
 
 @asynccontextmanager
@@ -28,7 +26,10 @@ async def mock_stdio_server():
                     method = md.get("method")
                     req_id = md.get("id")
                     # limited debug output
-                    print(f"[mock_stdio] received method={method} id={req_id} msg={md}", file=sys.stderr)
+                    print(
+                        f"[mock_stdio] received method={method} id={req_id} msg={md}",
+                        file=sys.stderr,
+                    )
 
                     # Normalize method name
                     method_norm = (method or "").lower()
@@ -36,21 +37,30 @@ async def mock_stdio_server():
                     # Prepare response payload dict
                     if method_norm == "initialize":
                         result = {
-                            "protocolVersion": md.get("params", {}).get("protocolVersion", "2025-06-18"),
+                            "protocolVersion": md.get("params", {}).get(
+                                "protocolVersion", "2025-06-18"
+                            ),
                             "capabilities": {},
                             "serverInfo": {"name": "immich-mock", "version": "0.0.0"},
                         }
-                    elif method_norm in ("listtoolsrequest", "listtools", "list_tools", "tools/list"):
+                    elif method_norm in (
+                        "listtoolsrequest",
+                        "listtools",
+                        "list_tools",
+                        "tools/list",
+                    ):
                         # minimal tools list — wrap in a dict so JSONRPC response 'result' is an object
-                        result = {"tools": [
-                            {
-                                "name": "ping",
-                                "title": "Ping",
-                                "description": "Ping tool",
-                                "inputSchema": None,
-                                "outputSchema": None,
-                            }
-                        ]}
+                        result = {
+                            "tools": [
+                                {
+                                    "name": "ping",
+                                    "title": "Ping",
+                                    "description": "Ping tool",
+                                    "inputSchema": {},
+                                    "outputSchema": {},
+                                }
+                            ]
+                        }
                     else:
                         # No response for notifications or unknown methods without id
                         result = None
@@ -64,12 +74,19 @@ async def mock_stdio_server():
                         }
                         # validate and create SessionMessage
                         try:
-                            resp = SessionMessage(JSONRPCMessage.model_validate(response_obj))
+                            resp = SessionMessage(
+                                JSONRPCMessage.model_validate(response_obj)
+                            )
                         except Exception as e:
-                            print(f"[mock_stdio] response validation error: {e}", file=sys.stderr)
+                            print(
+                                f"[mock_stdio] response validation error: {e}",
+                                file=sys.stderr,
+                            )
                             raise
                         await write_send.send(resp)
-                        print(f"[mock_stdio] sent response id={req_id}", file=sys.stderr)
+                        print(
+                            f"[mock_stdio] sent response id={req_id}", file=sys.stderr
+                        )
                 except Exception as e:
                     print(f"[mock_stdio] error: {e}", file=sys.stderr)
                     continue
