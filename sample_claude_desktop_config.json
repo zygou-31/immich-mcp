@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "immich": {
+      "command": "python",
+      "args": ["-m", "main", "--mode", "stdio"],
+      "env": {
+        "IMMICH_BASE_URL": "https://your-immich-server.com/api",
+        "IMMICH_API_KEY": "your-immich-api-key",
+        "AUTH_TOKEN": "your-secret-auth-token",
+        "DISABLE_CONSOLE_OUTPUT": "true"
+      }
+    }
+  }
+}

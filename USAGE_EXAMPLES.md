@@ -113,13 +113,33 @@ asyncio.run(tools_example())
 1. **Install Claude Desktop**
 2. **Configure MCP Server**
 
-Create `claude_desktop_config.json`:
+Create `claude_desktop_config.json` (stdio mode example):
+
 ```json
 {
   "mcpServers": {
     "immich": {
       "command": "python",
-      "args": ["-m", "main"],
+      "args": ["-m", "main", "--mode", "stdio"],
+      "env": {
+        "IMMICH_BASE_URL": "https://your-immich-server.com/api",
+        "IMMICH_API_KEY": "your-immich-api-key",
+        "AUTH_TOKEN": "your-secret-auth-token",
+        "DISABLE_CONSOLE_OUTPUT": "true"
+      }
+    }
+  }
+}
+```
+
+Create `claude_desktop_config_http.json` (HTTP mode example):
+
+```json
+{
+  "mcpServers": {
+    "immich_http": {
+      "command": "python",
+      "args": ["-m", "main", "--mode", "http", "--host", "0.0.0.0", "--port", "8626"],
       "env": {
         "IMMICH_BASE_URL": "https://your-immich-server.com/api",
         "IMMICH_API_KEY": "your-immich-api-key",
@@ -131,11 +151,20 @@ Create `claude_desktop_config.json`:
 ```
 
 3. **Usage in Claude**
+
+When running in stdio mode Claude (or another MCP-capable client) will communicate over stdin/stdout. Make sure to set `DISABLE_CONSOLE_OUTPUT=true` in the env to avoid corrupting JSON-RPC with logs printed to stdout.
+
+Example conversation:
 ```
 User: Show me my recent photos
 Claude: I'll search for your recent photos using the Immich MCP server.
 [Uses search_photos tool with query "recent"]
 ```
+
+Notes:
+- Stdio mode: Use `--mode stdio` and set `DISABLE_CONSOLE_OUTPUT=true` to suppress non-JSON stdout.
+- HTTP mode: Use `--mode http` (default) and call the exposed HTTP endpoints (e.g., /mcp) over the network with a Bearer token.
+- You can place secrets in files and reference them with IMMICH_API_KEY_FILE and AUTH_TOKEN_FILE environment variables (see Configuration section).
 
 ### Using with Custom MCP Client
 
