@@ -174,8 +174,16 @@ def load_config() -> ImmichConfig:
         return config
 
     except ValidationError as e:
-        error_msg = "Invalid configuration:\n" + "\n".join(
-            [f"- {error['loc'][0]}: {error['msg']}" for error in e.errors()]
-        )
+        # Build a robust error message even if error['loc'] shape varies
+        parts = []
+        for error in e.errors():
+            loc = error.get("loc")
+            if isinstance(loc, (list, tuple)) and len(loc) > 0:
+                loc_str = ".".join(str(x) for x in loc)
+            else:
+                loc_str = str(loc)
+            parts.append(f"- {loc_str}: {error.get('msg')}")
+
+        error_msg = "Invalid configuration:\n" + "\n".join(parts)
         logger.error(error_msg)
         raise

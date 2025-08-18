@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import httpx
 import logging
 import contextlib
+import os
 from contextlib import asynccontextmanager
 
 from immich_mcp.client import ImmichClient
@@ -56,10 +57,23 @@ async def lifespan(app: FastAPI):
                 Tool.from_function(immich_tools.create_album),
             ],
         )
-        app.mount("/mcp", tool_server.streamable_http_app())
 
-        async with contextlib.AsyncExitStack() as stack:
-            await stack.enter_async_context(tool_server.session_manager.run())
+        # Optionally disable mounting the streamable HTTP app (useful for stdio-only tests)
+        disable_streamable = (
+            "DISABLE_STREAMABLE_HTTP" in os.environ
+            and os.environ.get("DISABLE_STREAMABLE_HTTP") == "true"
+        )
+
+        if not disable_streamable:
+            app.mount("/mcp", tool_server.streamable_http_app())
+
+        # Only start the tool server's session manager if the streamable app is enabled
+        if not disable_streamable:
+            async with contextlib.AsyncExitStack() as stack:
+                await stack.enter_async_context(tool_server.session_manager.run())
+                yield
+        else:
+            # For stdio-only runs/tests, yield without starting HTTP session manager
             yield
     except Exception as e:
         logger.error(f"Startup error: {e}")
@@ -184,6 +198,37 @@ def create_app() -> FastAPI:
 app = create_app()
 
 if __name__ == "__main__":
+    import argparse
+    import asyncio
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8626)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode",
+        default=os.environ.get("MCP_MODE", "http"),
+        help="Mode to run: http or stdio",
+    )
+    args = parser.parse_args()
+
+    mode = args.mode or os.environ.get("MCP_MODE", "http")
+
+    if mode == "stdio" or os.environ.get("MCP_MODE") == "stdio":
+        # Run the stdio server entrypoint from immich_mcp.stdio_bridge
+        try:
+            from immich_mcp.stdio_bridge import main as stdio_main
+
+            logger.info("Starting stdio server mode")
+            asyncio.run(stdio_main())
+        except Exception as e:
+            logger.error(f"Failed to start stdio server: {e}")
+            raise
+    else:
+        disable_uvicorn = (
+            "DISABLE_UVICORN" in os.environ
+            and os.environ.get("DISABLE_UVICORN") == "true"
+        )
+        # If uvicorn disabled via env, skip starting the HTTP server
+        if disable_uvicorn:
+            logger.info("Skipping uvicorn.run due to DISABLE_UVICORN=true")
+        else:
+            uvicorn.run(app, host="0.0.0.0", port=8626)
