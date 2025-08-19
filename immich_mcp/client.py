@@ -8,6 +8,7 @@ photo management operations.
 
 import httpx
 from typing import Optional, Dict, Any, List
+from urllib.parse import urljoin
 from immich_mcp.config import ImmichConfig
 
 
@@ -62,8 +63,9 @@ class ImmichClient:
             >>> print(f"Found {len(assets)} assets")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), "api/assets")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/assets", headers=self.headers
+                url, headers=self.headers
             )
             response.raise_for_status()
             return response.json()
@@ -96,8 +98,9 @@ class ImmichClient:
             >>> print(asset["originalFileName"])
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), f"api/assets/{asset_id}")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/assets/{asset_id}",
+                url,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -166,8 +169,9 @@ class ImmichClient:
             ... })
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), "api/search/metadata")
             response = await client.post(
-                f"{self.config.immich_base_url}/api/search/metadata",
+                url,
                 headers=self.headers,
                 json=query,
             )
@@ -225,8 +229,9 @@ class ImmichClient:
             ... })
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), "api/search/smart")
             response = await client.post(
-                f"{self.config.immich_base_url}/api/search/smart",
+                url,
                 headers=self.headers,
                 json=query,
             )
@@ -234,80 +239,66 @@ class ImmichClient:
             return response.json()
 
     async def search_people(
-        self, query: str = "", limit: int = 100, with_hidden: bool = None
+        self, name: str, with_hidden: Optional[bool] = None
     ) -> List[Dict[str, Any]]:
         """
         Search for people in the photo library.
-
-        Args:
-            query: Search query for person names
-            limit: Maximum number of results to return
-            with_hidden: Include hidden people in the results
-
-        Returns:
-            List[Dict[str, Any]]: List of people matching the search criteria
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> people = await client.search_people("John", limit=10)
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            params = {"name": query, "limit": limit}
+            params = {"name": name}
             if with_hidden is not None:
                 params["withHidden"] = with_hidden
+            url = urljoin(str(self.config.immich_base_url), "api/search/person")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/search/person",
+                url,
                 headers=self.headers,
                 params=params,
             )
             response.raise_for_status()
             return response.json()
 
-    async def search_places(
-        self, query: str = "", limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    async def search_places(self, name: str) -> List[Dict[str, Any]]:
         """
         Search for places and locations in the photo library.
-
-        Args:
-            query: Search query for place names
-            limit: Maximum number of results to return
-
-        Returns:
-            List[Dict[str, Any]]: List of places matching the search criteria
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> places = await client.search_places("beach", limit=10)
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            params = {"q": query, "limit": limit}
+            params = {"name": name}
+            url = urljoin(str(self.config.immich_base_url), "api/search/places")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/search/places",
+                url,
                 headers=self.headers,
                 params=params,
             )
             response.raise_for_status()
             return response.json()
 
-    async def get_search_suggestions(self, query: str = "") -> List[str]:
+    async def get_search_suggestions(
+        self,
+        type: str,
+        country: Optional[str] = None,
+        include_null: Optional[bool] = None,
+        make: Optional[str] = None,
+        model: Optional[str] = None,
+        state: Optional[str] = None,
+    ) -> List[str]:
         """
         Get search suggestions based on partial queries.
-
-        Args:
-            query: Partial search query for suggestions
-
-        Returns:
-            List[str]: List of search suggestions
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> suggestions = await client.get_search_suggestions("be")
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            params = {"q": query}
+            params = {"type": type}
+            if country is not None:
+                params["country"] = country
+            if include_null is not None:
+                params["includeNull"] = include_null
+            if make is not None:
+                params["make"] = make
+            if model is not None:
+                params["model"] = model
+            if state is not None:
+                params["state"] = state
+            url = urljoin(str(self.config.immich_base_url), "api/search/suggestions")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/search/suggestions",
+                url,
                 headers=self.headers,
                 params=params,
             )
@@ -329,8 +320,9 @@ class ImmichClient:
             >>> random_assets = await client.search_random(limit=5)
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), "api/search/random")
             response = await client.post(
-                f"{self.config.immich_base_url}/api/search/random",
+                url,
                 headers=self.headers,
                 json={"limit": limit},
             )
@@ -338,27 +330,32 @@ class ImmichClient:
             return response.json()
 
     async def get_all_people(
-        self, query: str = "", limit: int = 100, offset: int = 0
+        self,
+        closest_asset_id: Optional[str] = None,
+        closest_person_id: Optional[str] = None,
+        page: Optional[int] = None,
+        size: Optional[int] = None,
+        with_hidden: Optional[bool] = None,
     ) -> Dict[str, Any]:
         """
         Get all people from the photo library with optional filtering.
-
-        Args:
-            query: Search query for filtering people by name
-            limit: Maximum number of people to return
-            offset: Number of people to skip for pagination
-
-        Returns:
-            Dict[str, Any]: Response containing people list and total count
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> people = await client.get_all_people("John", 50, 0)
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            params = {"q": query, "limit": limit, "offset": offset}
+            params = {}
+            if closest_asset_id is not None:
+                params["closestAssetId"] = closest_asset_id
+            if closest_person_id is not None:
+                params["closestPersonId"] = closest_person_id
+            if page is not None:
+                params["page"] = page
+            if size is not None:
+                params["size"] = size
+            if with_hidden is not None:
+                params["withHidden"] = with_hidden
+
+            url = urljoin(str(self.config.immich_base_url), "api/people")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/people",
+                url,
                 headers=self.headers,
                 params=params,
             )
@@ -392,8 +389,9 @@ class ImmichClient:
             >>> print(person["name"])
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), f"api/people/{person_id}")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/people/{person_id}",
+                url,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -419,8 +417,11 @@ class ImmichClient:
             >>> stats = await client.get_person_statistics("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(
+                str(self.config.immich_base_url), f"api/people/{person_id}/statistics"
+            )
             response = await client.get(
-                f"{self.config.immich_base_url}/api/people/{person_id}/statistics",
+                url,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -441,8 +442,11 @@ class ImmichClient:
             >>> thumbnail = await client.get_person_thumbnail("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(
+                str(self.config.immich_base_url), f"api/people/{person_id}/thumbnail"
+            )
             response = await client.get(
-                f"{self.config.immich_base_url}/api/people/{person_id}/thumbnail",
+                url,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -473,8 +477,9 @@ class ImmichClient:
             >>> print(f"Found {len(albums)} albums")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), "api/albums")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/albums", headers=self.headers
+                url, headers=self.headers
             )
             response.raise_for_status()
             return response.json()
@@ -509,8 +514,9 @@ class ImmichClient:
             payload["assetIds"] = asset_ids
 
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), "api/albums")
             response = await client.post(
-                f"{self.config.immich_base_url}/api/albums",
+                url,
                 headers=self.headers,
                 json=payload,
             )
@@ -546,8 +552,9 @@ class ImmichClient:
             >>> album = await client.get_album("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}")
             response = await client.get(
-                f"{self.config.immich_base_url}/api/albums/{album_id}",
+                url,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -569,8 +576,9 @@ class ImmichClient:
             >>> await client.delete_album("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}")
             response = await client.delete(
-                f"{self.config.immich_base_url}/api/albums/{album_id}",
+                url,
                 headers=self.headers,
             )
             response.raise_for_status()
@@ -599,8 +607,9 @@ class ImmichClient:
         payload = {"ids": asset_ids}
 
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}/assets")
             response = await client.put(
-                f"{self.config.immich_base_url}/api/albums/{album_id}/assets",
+                url,
                 headers=self.headers,
                 json=payload,
             )
@@ -631,9 +640,10 @@ class ImmichClient:
         payload = {"ids": asset_ids}
 
         async with httpx.AsyncClient(timeout=10) as client:
+            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}/assets")
             response = await client.request(
                 "DELETE",
-                f"{self.config.immich_base_url}/api/albums/{album_id}/assets",
+                url,
                 headers=self.headers,
                 json=payload,
             )
