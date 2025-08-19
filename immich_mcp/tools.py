@@ -33,7 +33,14 @@ class ImmichTools:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     async def get_asset_info(self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None) -> str:
-        """Gets information about a specific asset with caching."""
+        """
+        Gets information about a specific asset with caching.
+
+        Args:
+            asset_id: The ID of the asset.
+            key: The key for the asset, used for shared links.
+            slug: The slug for the asset, used for shared links.
+        """
         try:
             asset = await self.client.get_asset(asset_id, key, slug)
             return json.dumps(asset)
@@ -94,6 +101,51 @@ class ImmichTools:
         """
         Search assets by metadata criteria with caching and rate limiting.
         Fully compliant with Immich OpenAPI specs for /search/metadata.
+
+        Args:
+            album_ids (Optional[List[str]]): List of album IDs to filter by.
+            checksum (Optional[str]): The checksum of the asset.
+            city (Optional[str]): The city where the asset was taken.
+            country (Optional[str]): The country where the asset was taken.
+            created_after (Optional[str]): The date after which the asset was created.
+            created_before (Optional[str]): The date before which the asset was created.
+            description (Optional[str]): The description of the asset.
+            device_asset_id (Optional[str]): The ID of the asset on the device.
+            device_id (Optional[str]): The ID of the device.
+            encoded_video_path (Optional[str]): The path to the encoded video.
+            asset_id (Optional[str]): The ID of the asset.
+            is_encoded (Optional[bool]): Whether the asset is encoded.
+            is_favorite (Optional[bool]): Whether the asset is a favorite.
+            is_motion (Optional[bool]): Whether the asset is a motion photo.
+            is_not_in_album (Optional[bool]): Whether the asset is not in an album.
+            is_offline (Optional[bool]): Whether the asset is offline.
+            lens_model (Optional[str]): The lens model used to take the asset.
+            library_id (Optional[str]): The ID of the library.
+            make (Optional[str]): The make of the camera used to take the asset.
+            model (Optional[str]): The model of the camera used to take the asset.
+            order (Optional[str]): The order in which to sort the assets.
+            original_file_name (Optional[str]): The original file name of the asset.
+            original_path (Optional[str]): The original path of the asset.
+            page (Optional[int]): The page number for pagination.
+            person_ids (Optional[List[str]]): List of person IDs to filter by.
+            preview_path (Optional[str]): The path to the preview of the asset.
+            rating (Optional[int]): The rating of the asset.
+            size (Optional[int]): The number of assets to return per page.
+            state (Optional[str]): The state where the asset was taken.
+            tag_ids (Optional[List[str]]): List of tag IDs to filter by.
+            taken_after (Optional[str]): The date after which the asset was taken.
+            taken_before (Optional[str]): The date before which the asset was taken.
+            thumbnail_path (Optional[str]): The path to the thumbnail of the asset.
+            trashed_after (Optional[str]): The date after which the asset was trashed.
+            trashed_before (Optional[str]): The date before which the asset was trashed.
+            asset_type (Optional[str]): The type of the asset.
+            updated_after (Optional[str]): The date after which the asset was updated.
+            updated_before (Optional[str]): The date before which the asset was updated.
+            visibility (Optional[str]): The visibility of the asset.
+            with_deleted (Optional[bool]): Whether to include deleted assets.
+            with_exif (Optional[bool]): Whether to include EXIF data.
+            with_people (Optional[bool]): Whether to include people data.
+            with_stacked (Optional[bool]): Whether to include stacked assets.
         """
         try:
             search_query = {
@@ -306,6 +358,10 @@ class ImmichTools:
     async def search_people(self, name: str, with_hidden: Optional[bool] = None) -> str:
         """
         Search for people in the photo library with caching.
+
+        Args:
+            name: The name of the person to search for.
+            with_hidden: Whether to include hidden people in the results.
         """
         try:
             results = await self.client.search_people(name, with_hidden)
@@ -321,6 +377,9 @@ class ImmichTools:
     async def search_places(self, name: str) -> str:
         """
         Search for places and locations in the photo library with caching.
+
+        Args:
+            name: The name of the place to search for.
         """
         try:
             results = await self.client.search_places(name)
@@ -344,6 +403,14 @@ class ImmichTools:
     ) -> str:
         """
         Get search suggestions based on partial queries with caching.
+
+        Args:
+            type: The type of suggestion to get. Enum: "COUNTRY", "STATE", "CITY", "MAKE", "MODEL".
+            country: The country to get suggestions for.
+            include_null: Whether to include null values.
+            make: The make of the camera to get suggestions for.
+            model: The model of the camera to get suggestions for.
+            state: The state to get suggestions for.
         """
         try:
             results = await self.client.get_search_suggestions(
@@ -395,6 +462,40 @@ class ImmichTools:
     ) -> str:
         """
         Get random assets from the photo library with caching.
+
+        Args:
+            size (Optional[int]): Number of random assets to return.
+            album_ids (Optional[List[str]]): List of album IDs to filter by.
+            city (Optional[str]): The city where the asset was taken.
+            country (Optional[str]): The country where the asset was taken.
+            created_after (Optional[str]): The date after which the asset was created.
+            created_before (Optional[str]): The date before which the asset was created.
+            device_id (Optional[str]): The ID of the device.
+            is_encoded (Optional[bool]): Whether the asset is encoded.
+            is_favorite (Optional[bool]): Whether the asset is a favorite.
+            is_motion (Optional[bool]): Whether the asset is a motion photo.
+            is_not_in_album (Optional[bool]): Whether the asset is not in an album.
+            is_offline (Optional[bool]): Whether the asset is offline.
+            lens_model (Optional[str]): The lens model used to take the asset.
+            library_id (Optional[str]): The ID of the library.
+            make (Optional[str]): The make of the camera used to take the asset.
+            model (Optional[str]): The model of the camera used to take the asset.
+            person_ids (Optional[List[str]]): List of person IDs to filter by.
+            rating (Optional[int]): The rating of the asset.
+            state (Optional[str]): The state where the asset was taken.
+            tag_ids (Optional[List[str]]): List of tag IDs to filter by.
+            taken_after (Optional[str]): The date after which the asset was taken.
+            taken_before (Optional[str]): The date before which the asset was taken.
+            trashed_after (Optional[str]): The date after which the asset was trashed.
+            trashed_before (Optional[str]): The date before which the asset was trashed.
+            asset_type (Optional[str]): The type of the asset.
+            updated_after (Optional[str]): The date after which the asset was updated.
+            updated_before (Optional[str]): The date before which the asset was updated.
+            visibility (Optional[str]): The visibility of the asset.
+            with_deleted (Optional[bool]): Whether to include deleted assets.
+            with_exif (Optional[bool]): Whether to include EXIF data.
+            with_people (Optional[bool]): Whether to include people data.
+            with_stacked (Optional[bool]): Whether to include stacked assets.
         """
         try:
             search_query = {
@@ -455,6 +556,13 @@ class ImmichTools:
     ) -> str:
         """
         Get all people from the photo library with caching and rate limiting.
+
+        Args:
+            closest_asset_id: The asset ID to search for closest people from.
+            closest_person_id: The person ID to search for closest people from.
+            page: The page number for pagination.
+            size: The number of people to return per page.
+            with_hidden: Whether to include hidden people in the results.
         """
         try:
             results = await self.client.get_all_people(
@@ -553,7 +661,13 @@ class ImmichTools:
     )
     @lru_cache(maxsize=128)
     async def get_all_albums(self, asset_id: Optional[str] = None, shared: Optional[bool] = None) -> str:
-        """Retrieves all albums from Immich with caching and rate limiting."""
+        """
+        Retrieves all albums from Immich with caching and rate limiting.
+
+        Args:
+            asset_id: The asset ID to get the albums for.
+            shared: Whether to get shared albums.
+        """
         try:
             albums = await self.client.get_all_albums(asset_id, shared)
             return json.dumps(albums)
@@ -569,9 +683,18 @@ class ImmichTools:
         album_name: str,
         description: str = "",
         asset_ids: Optional[List[str]] = None,
-        album_users: Optional[List[Dict[str, str]]] = None,
+        album_users: Optional[List[Dict[str, List[str]]]] = None,
     ) -> str:
-        """Creates a new album in Immich."""
+        """
+        Creates a new album in Immich.
+
+        Args:
+            album_name: The name of the new album.
+            description: A description for the album.
+            asset_ids: A list of asset IDs to include in the album.
+            album_users: A list of users to share the album with, following the AddUsersDto schema.
+                         Example: [{"sharedUserIds": ["user-id-1", "user-id-2"]}]
+        """
         try:
             album = await self.client.create_album(album_name, description, asset_ids, album_users)
             return json.dumps(album)
@@ -583,7 +706,15 @@ class ImmichTools:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     async def get_album_info(self, album_id: str, key: Optional[str] = None, slug: Optional[str] = None, without_assets: Optional[bool] = None) -> str:
-        """Gets information about a specific album with caching."""
+        """
+        Gets information about a specific album with caching.
+
+        Args:
+            album_id: The ID of the album.
+            key: The key for the album, used for shared links.
+            slug: The slug for the album, used for shared links.
+            without_assets: Whether to exclude asset information from the response.
+        """
         try:
             album = await self.client.get_album(album_id, key, slug, without_assets)
             return json.dumps(album)
@@ -607,7 +738,15 @@ class ImmichTools:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     async def add_assets_to_album(self, album_id: str, asset_ids: List[str], key: Optional[str] = None, slug: Optional[str] = None) -> str:
-        """Adds assets to an existing album."""
+        """
+        Adds assets to an existing album.
+
+        Args:
+            album_id: The ID of the album to add assets to.
+            asset_ids: A list of asset IDs to add to the album.
+            key: The key for the album, used for shared links.
+            slug: The slug for the album, used for shared links.
+        """
         try:
             results = await self.client.add_assets_to_album(album_id, asset_ids, key, slug)
             return json.dumps(results)

@@ -32,10 +32,17 @@ class ImmichClient:
             config: Configuration object containing server URL and API key
         """
         self.config = config
+        self.base_url = str(config.immich_base_url)
+        if not self.base_url.endswith('/'):
+            self.base_url += '/'
+
         self.headers = {
             "x-api-key": self.config.immich_api_key,
             "Accept": "application/json",
         }
+
+    def _get_url(self, path: str) -> str:
+        return urljoin(self.base_url, path)
 
     async def get_asset(self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -43,6 +50,8 @@ class ImmichClient:
 
         Args:
             asset_id: The unique identifier of the asset to retrieve
+            key: The key for the asset, used for shared links.
+            slug: The slug for the asset, used for shared links.
 
         Returns:
             Dict[str, Any]: Asset object containing comprehensive metadata including:
@@ -70,7 +79,7 @@ class ImmichClient:
                 params["key"] = key
             if slug:
                 params["slug"] = slug
-            url = urljoin(str(self.config.immich_base_url), f"api/assets/{asset_id}")
+            url = self._get_url(f"asset/{asset_id}")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -84,65 +93,17 @@ class ImmichClient:
         Search assets by metadata criteria.
 
         Args:
-            query: Search criteria including:
-                - albumIds: Filter by album IDs
-                - checksum: Filter by checksum
-                - city: Filter by city
-                - country: Filter by country
-                - createdAfter: Filter by creation date (after)
-                - createdBefore: Filter by creation date (before)
-                - description: Filter by description
-                - deviceAssetId: Filter by device asset ID
-                - deviceId: Filter by device ID
-                - encodedVideoPath: Filter by encoded video path
-                - id: Filter by asset ID
-                - isEncoded: Filter by encoded status
-                - isFavorite: Filter by favorite status
-                - isMotion: Filter by motion status
-                - isNotInAlbum: Filter by not in album
-                - isOffline: Filter by offline status
-                - lensModel: Filter by lens model
-                - libraryId: Filter by library ID
-                - make: Filter by camera make
-                - model: Filter by camera model
-                - order: Sort order (asc/desc)
-                - originalFileName: Filter by original file name
-                - originalPath: Filter by original path
-                - page: Page number for pagination
-                - personIds: Filter by person IDs
-                - previewPath: Filter by preview path
-                - q: Search query string
-                - rating: Filter by rating (-1 to 5)
-                - size: Number of items per page (1-1000)
-                - state: Filter by state
-                - tagIds: Filter by tag IDs
-                - takenAfter: Filter by taken date (after)
-                - takenBefore: Filter by taken date (before)
-                - thumbnailPath: Filter by thumbnail path
-                - trashedAfter: Filter by trashed date (after)
-                - trashedBefore: Filter by trashed date (before)
-                - type: Asset type (IMAGE, VIDEO, AUDIO, OTHER)
-                - updatedAfter: Filter by updated date (after)
-                - updatedBefore: Filter by updated date (before)
-                - visibility: Filter by visibility (archive, timeline, hidden, locked)
-                - withDeleted: Include deleted assets
-                - withExif: Include EXIF data
-                - withPeople: Include people data
-                - withStacked: Include stacked assets
+            query: Search criteria dictionary. See Immich API for all possible options.
 
         Returns:
             Dict[str, Any]: Search results containing assets and total count
 
-        Example:
-            >>> client = ImmichClient(config)
-            >>> results = await client.search_metadata({
-            ...     "q": "beach",
-            ...     "type": "IMAGE",
-            ...     "isFavorite": True
-            ... })
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), "api/search/metadata")
+            url = self._get_url("search/metadata")
             response = await client.post(
                 url,
                 headers=self.headers,
@@ -156,53 +117,17 @@ class ImmichClient:
         Smart search using AI to find assets based on natural language queries.
 
         Args:
-            query: Smart search query including:
-                - query: Natural language search query (required)
-                - albumIds: Filter by album IDs
-                - city: Filter by city
-                - country: Filter by country
-                - createdAfter: Filter by creation date (after)
-                - createdBefore: Filter by creation date (before)
-                - deviceId: Filter by device ID
-                - isEncoded: Filter by encoded status
-                - isFavorite: Filter by favorite status
-                - isMotion: Filter by motion status
-                - isNotInAlbum: Filter by not in album
-                - isOffline: Filter by offline status
-                - language: Language for the query
-                - lensModel: Filter by lens model
-                - libraryId: Filter by library ID
-                - make: Filter by camera make
-                - model: Filter by camera model
-                - page: Page number for pagination
-                - personIds: Filter by person IDs
-                - rating: Filter by rating (-1 to 5)
-                - size: Number of items per page (1-1000)
-                - state: Filter by state
-                - tagIds: Filter by tag IDs
-                - takenAfter: Filter by taken date (after)
-                - takenBefore: Filter by taken date (before)
-                - trashedAfter: Filter by trashed date (after)
-                - trashedBefore: Filter by trashed date (before)
-                - type: Asset type filter (IMAGE, VIDEO, AUDIO, OTHER)
-                - updatedAfter: Filter by updated date (after)
-                - updatedBefore: Filter by updated date (before)
-                - visibility: Filter by visibility (archive, timeline, hidden, locked)
-                - withDeleted: Include deleted assets
-                - withExif: Include EXIF data
+            query: Smart search query dictionary. See Immich API for all possible options.
 
         Returns:
             Dict[str, Any]: AI-powered search results
 
-        Example:
-            >>> client = ImmichClient(config)
-            >>> results = await client.search_smart({
-            ...     "query": "photos of my dog at the beach",
-            ...     "limit": 10
-            ... })
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), "api/search/smart")
+            url = self._get_url("search/smart")
             response = await client.post(
                 url,
                 headers=self.headers,
@@ -216,12 +141,23 @@ class ImmichClient:
     ) -> List[Dict[str, Any]]:
         """
         Search for people in the photo library.
+
+        Args:
+            name: The name of the person to search for.
+            with_hidden: Whether to include hidden people in the results.
+
+        Returns:
+            List[Dict[str, Any]]: A list of people matching the search criteria.
+
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
             params = {"name": name}
             if with_hidden is not None:
                 params["withHidden"] = with_hidden
-            url = urljoin(str(self.config.immich_base_url), "api/search/person")
+            url = self._get_url("search/person")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -235,10 +171,20 @@ class ImmichClient:
     ) -> List[Dict[str, Any]]:
         """
         Search for places and locations in the photo library.
+
+        Args:
+            name: The name of the place to search for.
+
+        Returns:
+            List[Dict[str, Any]]: A list of places matching the search criteria.
+
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
             params = {"name": name}
-            url = urljoin(str(self.config.immich_base_url), "api/search/places")
+            url = self._get_url("search/places")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -258,6 +204,21 @@ class ImmichClient:
     ) -> List[str]:
         """
         Get search suggestions based on partial queries.
+
+        Args:
+            type: The type of suggestion to get.
+            country: The country to get suggestions for.
+            include_null: Whether to include null values.
+            make: The make of the camera to get suggestions for.
+            model: The model of the camera to get suggestions for.
+            state: The state to get suggestions for.
+
+        Returns:
+            List[str]: A list of search suggestions.
+
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
             params = {"type": type}
@@ -271,7 +232,7 @@ class ImmichClient:
                 params["model"] = model
             if state is not None:
                 params["state"] = state
-            url = urljoin(str(self.config.immich_base_url), "api/search/suggestions")
+            url = self._get_url("search/suggestions")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -283,9 +244,19 @@ class ImmichClient:
     async def search_random(self, query: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Get random assets from the photo library.
+
+        Args:
+            query: Search criteria dictionary. See Immich API for all possible options.
+
+        Returns:
+            List[Dict[str, Any]]: A list of random assets.
+
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), "api/search/random")
+            url = self._get_url("search/random")
             response = await client.post(
                 url,
                 headers=self.headers,
@@ -304,6 +275,20 @@ class ImmichClient:
     ) -> Dict[str, Any]:
         """
         Get all people from the photo library with optional filtering.
+
+        Args:
+            closest_asset_id: The asset ID to search for closest people from.
+            closest_person_id: The person ID to search for closest people from.
+            page: The page number for pagination.
+            size: The number of people to return per page.
+            with_hidden: Whether to include hidden people in the results.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing a list of people and the total count.
+
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
             params = {}
@@ -317,7 +302,7 @@ class ImmichClient:
                 params["size"] = size
             if with_hidden is not None:
                 params["withHidden"] = with_hidden
-            url = urljoin(str(self.config.immich_base_url), "api/people")
+            url = self._get_url("people")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -334,26 +319,14 @@ class ImmichClient:
             person_id: The unique identifier of the person to retrieve
 
         Returns:
-            Dict[str, Any]: Person object containing comprehensive information including:
-                - id: Unique person identifier
-                - name: Person's name
-                - thumbnailPath: Thumbnail image path
-                - faces: List of face instances
-                - assets: Associated assets
-                - birthDate: Birth date if available
-                - etc.
+            Dict[str, Any]: Person object containing comprehensive information.
 
         Raises:
-            httpx.HTTPStatusError: If the API request fails (e.g., person not found)
+            httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> person = await client.get_person("550e8400-e29b-41d4-a716-446655440000")
-            >>> print(person["name"])
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), f"api/people/{person_id}")
+            url = self._get_url(f"people/{person_id}")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -366,24 +339,17 @@ class ImmichClient:
         Get statistics for a specific person.
 
         Args:
-            person_id: The unique identifier of the person
+            person_id: The unique identifier of the person.
 
         Returns:
-            Dict[str, Any]: Statistics including:
-                - totalAssets: Total number of assets
-                - totalSize: Total size of assets
-                - oldestDate: Date of oldest asset
-                - newestDate: Date of newest asset
-                - etc.
+            Dict[str, Any]: Statistics for the person.
 
-        Example:
-            >>> client = ImmichClient(config)
-            >>> stats = await client.get_person_statistics("550e8400-e29b-41d4-a716-446655440000")
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(
-                str(self.config.immich_base_url), f"api/people/{person_id}/statistics"
-            )
+            url = self._get_url(f"people/{person_id}/statistics")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -396,19 +362,17 @@ class ImmichClient:
         Get thumbnail image for a specific person.
 
         Args:
-            person_id: The unique identifier of the person
+            person_id: The unique identifier of the person.
 
         Returns:
-            bytes: Thumbnail image data
+            bytes: The thumbnail image data.
 
-        Example:
-            >>> client = ImmichClient(config)
-            >>> thumbnail = await client.get_person_thumbnail("550e8400-e29b-41d4-a716-446655440000")
+        Raises:
+            httpx.HTTPStatusError: If the API request fails
+            httpx.RequestError: If there's a network connectivity issue
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(
-                str(self.config.immich_base_url), f"api/people/{person_id}/thumbnail"
-            )
+            url = self._get_url(f"people/{person_id}/thumbnail")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -420,25 +384,16 @@ class ImmichClient:
         """
         Retrieve all albums from the Immich API.
 
+        Args:
+            asset_id: The asset ID to get the albums for.
+            shared: Whether to get shared albums.
+
         Returns:
-            List[Dict[str, Any]]: List of album objects containing metadata like:
-                - id: Unique album identifier
-                - albumName: Album name
-                - description: Album description
-                - albumThumbnailAssetId: Thumbnail asset ID
-                - shared: Whether album is shared
-                - assetCount: Number of assets in album
-                - createdAt: Creation timestamp
-                - updatedAt: Last update timestamp
+            List[Dict[str, Any]]: List of album objects.
 
         Raises:
             httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> albums = await client.get_all_albums()
-            >>> print(f"Found {len(albums)} albums")
         """
         async with httpx.AsyncClient(timeout=10) as client:
             params = {}
@@ -446,7 +401,7 @@ class ImmichClient:
                 params["assetId"] = asset_id
             if shared is not None:
                 params["shared"] = shared
-            url = urljoin(str(self.config.immich_base_url), "api/albums")
+            url = self._get_url("albums")
             response = await client.get(
                 url, headers=self.headers, params=params if params else None
             )
@@ -467,6 +422,7 @@ class ImmichClient:
             album_name: Name of the album to create
             description: Optional description for the album
             asset_ids: Optional list of asset IDs to add to the album
+            album_users: Optional list of users to share the album with.
 
         Returns:
             Dict[str, Any]: Created album object
@@ -474,10 +430,6 @@ class ImmichClient:
         Raises:
             httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> album = await client.create_album("Vacation 2024", "Summer vacation photos")
         """
         payload = {"albumName": album_name, "description": description}
         if asset_ids:
@@ -486,7 +438,7 @@ class ImmichClient:
             payload["albumUsers"] = album_users
 
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), "api/albums")
+            url = self._get_url("albums")
             response = await client.post(
                 url,
                 headers=self.headers,
@@ -500,28 +452,17 @@ class ImmichClient:
         Get detailed information about a specific album.
 
         Args:
-            album_id: The unique identifier of the album
+            album_id: The unique identifier of the album.
+            key: The key for the album, used for shared links.
+            slug: The slug for the album, used for shared links.
+            without_assets: Whether to exclude asset information from the response.
 
         Returns:
-            Dict[str, Any]: Album object containing comprehensive information including:
-                - id: Unique album identifier
-                - albumName: Album name
-                - description: Album description
-                - assets: List of assets in the album
-                - albumThumbnailAssetId: Thumbnail asset ID
-                - shared: Whether album is shared
-                - sharedUsers: List of users album is shared with
-                - assetCount: Number of assets
-                - createdAt: Creation timestamp
-                - updatedAt: Last update timestamp
+            Dict[str, Any]: Album object containing comprehensive information.
 
         Raises:
             httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> album = await client.get_album("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
             params = {}
@@ -531,7 +472,7 @@ class ImmichClient:
                 params["slug"] = slug
             if without_assets is not None:
                 params["withoutAssets"] = without_assets
-            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}")
+            url = self._get_url(f"albums/{album_id}")
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -545,18 +486,14 @@ class ImmichClient:
         Delete an album from Immich.
 
         Args:
-            album_id: The unique identifier of the album to delete
+            album_id: The unique identifier of the album to delete.
 
         Raises:
             httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> await client.delete_album("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}")
+            url = self._get_url(f"albums/{album_id}")
             response = await client.delete(
                 url,
                 headers=self.headers,
@@ -570,19 +507,17 @@ class ImmichClient:
         Add assets to an existing album.
 
         Args:
-            album_id: The unique identifier of the album
-            asset_ids: List of asset IDs to add to the album
+            album_id: The unique identifier of the album.
+            asset_ids: List of asset IDs to add to the album.
+            key: The key for the album, used for shared links.
+            slug: The slug for the album, used for shared links.
 
         Returns:
-            Dict[str, Any]: Response containing success/failure information for each asset
+            Dict[str, Any]: Response containing success/failure information for each asset.
 
         Raises:
             httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> results = await client.add_assets_to_album("album-id", ["asset1", "asset2"])
         """
         payload = {"ids": asset_ids}
         params = {}
@@ -592,7 +527,7 @@ class ImmichClient:
             params["slug"] = slug
 
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}/assets")
+            url = self._get_url(f"albums/{album_id}/assets")
             response = await client.put(
                 url,
                 headers=self.headers,
@@ -609,24 +544,20 @@ class ImmichClient:
         Remove assets from an album.
 
         Args:
-            album_id: The unique identifier of the album
-            asset_ids: List of asset IDs to remove from the album
+            album_id: The unique identifier of the album.
+            asset_ids: List of asset IDs to remove from the album.
 
         Returns:
-            Dict[str, Any]: Response containing success/failure information
+            Dict[str, Any]: Response containing success/failure information.
 
         Raises:
             httpx.HTTPStatusError: If the API request fails
             httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> results = await client.remove_assets_from_album("album-id", ["asset1", "asset2"])
         """
         payload = {"ids": asset_ids}
 
         async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}/assets")
+            url = self._get_url(f"albums/{album_id}/assets")
             response = await client.request(
                 "DELETE",
                 url,
