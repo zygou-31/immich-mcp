@@ -68,6 +68,59 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
+    async def get_all_jobs_status(self) -> Dict[str, Any]:
+        """
+        Get the status of all jobs.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the status of all jobs.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{self.config.immich_base_url}/api/jobs", headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def send_job_command(
+        self, job_id: str, command: str, force: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Send a command to a job.
+
+        Args:
+            job_id: The ID of the job to send the command to.
+            command: The command to send (e.g., 'start', 'stop').
+            force: Whether to force the command.
+
+        Returns:
+            Dict[str, Any]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.put(
+                f"{self.config.immich_base_url}/api/jobs/{job_id}",
+                headers=self.headers,
+                json={"command": command, "force": force},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def run_asset_jobs(self, name: str, asset_ids: List[str]) -> None:
+        """
+        Run a job for a set of assets.
+
+        Args:
+            name: The name of the job to run.
+            asset_ids: A list of asset IDs to run the job on.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(
+                f"{self.config.immich_base_url}/api/assets/jobs",
+                headers=self.headers,
+                json={"name": name, "assetIds": asset_ids},
+            )
+            response.raise_for_status()
+
     async def get_asset(self, asset_id: str) -> Dict[str, Any]:
         """
         Retrieve detailed information about a specific asset.
