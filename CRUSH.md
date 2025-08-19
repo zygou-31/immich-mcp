@@ -22,28 +22,18 @@ pytest tests/immich_mcp/test_client.py
 # Run single test
 pytest tests/immich_mcp/test_client.py::test_specific_function
 
-# Format code
-black . && isort .
-
-# Linting
-flake8
+# Format and lint code
+ruff check . --fix && ruff format .
 
 # Type checking
 mypy immich_mcp/
 
 # Pyright type checking
 pyright immich_mcp/
-
-# Ruff linting
-ruff check immich_mcp/
-
-# Ruff formatting
-ruff format immich_mcp/
 ```
 
 ## Code Style Guidelines
-1. Use Black for formatting with default settings
-2. Import sorting with isort (3rd party, then local)
+1. Use ruff for formatting and linting with default settings
 3. Type hints required for all functions
 4. Use Pydantic for configuration and data validation
 5. Error handling with HTTPException for API endpoints

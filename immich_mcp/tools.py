@@ -630,3 +630,65 @@ class ImmichTools:
         except Exception as e:
             logger.error(f"Error removing assets from album {album_id}: {e}")
             return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def get_all_jobs_status(self) -> str:
+        """
+        Get the status of all jobs.
+
+        Returns:
+            str: JSON string containing the status of all jobs.
+        """
+        try:
+            status = await self.client.get_all_jobs_status()
+            return json.dumps(status)
+        except Exception as e:
+            logger.error(f"Error getting all jobs status: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def send_job_command(
+        self, job_id: str, command: str, force: bool = False
+    ) -> str:
+        """
+        Send a command to a job.
+
+        Args:
+            job_id: The ID of the job to send the command to.
+            command: The command to send (e.g., 'start', 'stop').
+            force: Whether to force the command.
+
+        Returns:
+            str: JSON string containing the response from the server.
+        """
+        try:
+            result = await self.client.send_job_command(job_id, command, force)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error sending job command {command} to {job_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def run_asset_jobs(self, name: str, asset_ids: List[str]) -> str:
+        """
+        Run a job for a set of assets.
+
+        Args:
+            name: The name of the job to run.
+            asset_ids: A list of asset IDs to run the job on.
+
+        Returns:
+            str: JSON string containing the response from the server.
+        """
+        try:
+            await self.client.run_asset_jobs(name, asset_ids)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error running asset job {name}: {e}")
+            return json.dumps({"error": str(e)})

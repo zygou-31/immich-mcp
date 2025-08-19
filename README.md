@@ -557,20 +557,12 @@ immich-mcp/
 ### Code Style
 
 This project uses:
-- **Black** for code formatting
-- **isort** for import sorting
-- **flake8** for linting
+- **ruff** for code formatting and linting
 - **mypy** for type checking
 
 ```bash
-# Format code
-black .
-
-# Sort imports
-isort .
-
-# Lint
-flake8
+# Format and lint code
+ruff check . --fix && ruff format .
 
 # Type check
 mypy immich_mcp/
