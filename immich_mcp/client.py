@@ -37,40 +37,7 @@ class ImmichClient:
             "Accept": "application/json",
         }
 
-    async def get_all_assets(self) -> List[Dict[str, Any]]:
-        """
-        Retrieve all assets from the Immich API.
-
-        This method fetches all photos and videos from your Immich library,
-        returning comprehensive metadata for each asset.
-
-        Returns:
-            List[Dict[str, Any]]: List of asset objects containing metadata like:
-                - id: Unique asset identifier
-                - originalFileName: Original filename
-                - fileCreatedAt: Creation timestamp
-                - type: Asset type (IMAGE/VIDEO)
-                - thumbhash: Thumbnail hash
-                - etc.
-
-        Raises:
-            httpx.HTTPStatusError: If the API request fails
-            httpx.RequestError: If there's a network connectivity issue
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> assets = await client.get_all_assets()
-            >>> print(f"Found {len(assets)} assets")
-        """
-        async with httpx.AsyncClient(timeout=10) as client:
-            url = urljoin(str(self.config.immich_base_url), "api/assets")
-            response = await client.get(
-                url, headers=self.headers
-            )
-            response.raise_for_status()
-            return response.json()
-
-    async def get_asset(self, asset_id: str) -> Dict[str, Any]:
+    async def get_asset(self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None) -> Dict[str, Any]:
         """
         Retrieve detailed information about a specific asset.
 
@@ -98,10 +65,16 @@ class ImmichClient:
             >>> print(asset["originalFileName"])
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if key:
+                params["key"] = key
+            if slug:
+                params["slug"] = slug
             url = urljoin(str(self.config.immich_base_url), f"api/assets/{asset_id}")
             response = await client.get(
                 url,
                 headers=self.headers,
+                params=params if params else None,
             )
             response.raise_for_status()
             return response.json()
@@ -257,7 +230,9 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
-    async def search_places(self, name: str) -> List[Dict[str, Any]]:
+    async def search_places(
+        self, name: str
+    ) -> List[Dict[str, Any]]:
         """
         Search for places and locations in the photo library.
         """
@@ -305,26 +280,16 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
-    async def search_random(self, limit: int = 10) -> List[Dict[str, Any]]:
+    async def search_random(self, query: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Get random assets from the photo library.
-
-        Args:
-            limit: Maximum number of random assets to return
-
-        Returns:
-            List[Dict[str, Any]]: List of random assets
-
-        Example:
-            >>> client = ImmichClient(config)
-            >>> random_assets = await client.search_random(limit=5)
         """
         async with httpx.AsyncClient(timeout=10) as client:
             url = urljoin(str(self.config.immich_base_url), "api/search/random")
             response = await client.post(
                 url,
                 headers=self.headers,
-                json={"limit": limit},
+                json=query,
             )
             response.raise_for_status()
             return response.json()
@@ -352,7 +317,6 @@ class ImmichClient:
                 params["size"] = size
             if with_hidden is not None:
                 params["withHidden"] = with_hidden
-
             url = urljoin(str(self.config.immich_base_url), "api/people")
             response = await client.get(
                 url,
@@ -452,7 +416,7 @@ class ImmichClient:
             response.raise_for_status()
             return response.content
 
-    async def get_all_albums(self) -> List[Dict[str, Any]]:
+    async def get_all_albums(self, asset_id: Optional[str] = None, shared: Optional[bool] = None) -> List[Dict[str, Any]]:
         """
         Retrieve all albums from the Immich API.
 
@@ -477,9 +441,14 @@ class ImmichClient:
             >>> print(f"Found {len(albums)} albums")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if asset_id:
+                params["assetId"] = asset_id
+            if shared is not None:
+                params["shared"] = shared
             url = urljoin(str(self.config.immich_base_url), "api/albums")
             response = await client.get(
-                url, headers=self.headers
+                url, headers=self.headers, params=params if params else None
             )
             response.raise_for_status()
             return response.json()
@@ -489,6 +458,7 @@ class ImmichClient:
         album_name: str,
         description: str = "",
         asset_ids: Optional[List[str]] = None,
+        album_users: Optional[List[Dict[str, str]]] = None,
     ) -> Dict[str, Any]:
         """
         Create a new album in Immich.
@@ -512,6 +482,8 @@ class ImmichClient:
         payload = {"albumName": album_name, "description": description}
         if asset_ids:
             payload["assetIds"] = asset_ids
+        if album_users:
+            payload["albumUsers"] = album_users
 
         async with httpx.AsyncClient(timeout=10) as client:
             url = urljoin(str(self.config.immich_base_url), "api/albums")
@@ -523,7 +495,7 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
-    async def get_album(self, album_id: str) -> Dict[str, Any]:
+    async def get_album(self, album_id: str, key: Optional[str] = None, slug: Optional[str] = None, without_assets: Optional[bool] = None) -> Dict[str, Any]:
         """
         Get detailed information about a specific album.
 
@@ -552,10 +524,18 @@ class ImmichClient:
             >>> album = await client.get_album("550e8400-e29b-41d4-a716-446655440000")
         """
         async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if key:
+                params["key"] = key
+            if slug:
+                params["slug"] = slug
+            if without_assets is not None:
+                params["withoutAssets"] = without_assets
             url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}")
             response = await client.get(
                 url,
                 headers=self.headers,
+                params=params if params else None,
             )
             response.raise_for_status()
             return response.json()
@@ -584,7 +564,7 @@ class ImmichClient:
             response.raise_for_status()
 
     async def add_assets_to_album(
-        self, album_id: str, asset_ids: List[str]
+        self, album_id: str, asset_ids: List[str], key: Optional[str] = None, slug: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Add assets to an existing album.
@@ -605,6 +585,11 @@ class ImmichClient:
             >>> results = await client.add_assets_to_album("album-id", ["asset1", "asset2"])
         """
         payload = {"ids": asset_ids}
+        params = {}
+        if key:
+            params["key"] = key
+        if slug:
+            params["slug"] = slug
 
         async with httpx.AsyncClient(timeout=10) as client:
             url = urljoin(str(self.config.immich_base_url), f"api/albums/{album_id}/assets")
@@ -612,6 +597,7 @@ class ImmichClient:
                 url,
                 headers=self.headers,
                 json=payload,
+                params=params if params else None,
             )
             response.raise_for_status()
             return response.json()

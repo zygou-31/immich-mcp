@@ -1,7 +1,7 @@
 from immich_mcp.client import ImmichClient
 import json
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict
 from functools import lru_cache
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -32,23 +32,10 @@ class ImmichTools:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    @lru_cache(maxsize=128)
-    async def get_all_assets(self) -> str:
-        """Retrieves all assets from Immich with caching and rate limiting."""
-        try:
-            assets = await self.client.get_all_assets()
-            return json.dumps(assets)
-        except Exception as e:
-            logger.error(f"Error getting all assets: {e}")
-            return json.dumps({"error": str(e)})
-
-    @retry(
-        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
-    )
-    async def get_asset_info(self, asset_id: str) -> str:
+    async def get_asset_info(self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None) -> str:
         """Gets information about a specific asset with caching."""
         try:
-            asset = await self.client.get_asset(asset_id)
+            asset = await self.client.get_asset(asset_id, key, slug)
             return json.dumps(asset)
         except Exception as e:
             logger.error(f"Error getting asset {asset_id}: {e}")
@@ -173,47 +160,80 @@ class ImmichTools:
         self,
         query: str,
         limit: int = 100,
-        album_ids: Optional[List[str]] = None,
-        city: Optional[str] = None,
-        country: Optional[str] = None,
-        created_after: Optional[str] = None,
-        created_before: Optional[str] = None,
-        device_id: Optional[str] = None,
-        is_encoded: Optional[bool] = None,
-        is_favorite: Optional[bool] = None,
-        is_motion: Optional[bool] = None,
-        is_not_in_album: Optional[bool] = None,
-        is_offline: Optional[bool] = None,
-        language: Optional[str] = None,
-        lens_model: Optional[str] = None,
-        library_id: Optional[str] = None,
-        make: Optional[str] = None,
-        model: Optional[str] = None,
-        page: Optional[int] = None,
-        person_ids: Optional[List[str]] = None,
-        rating: Optional[int] = None,
-        state: Optional[str] = None,
-        tag_ids: Optional[List[str]] = None,
-        taken_after: Optional[str] = None,
-        taken_before: Optional[str] = None,
-        trashed_after: Optional[str] = None,
-        trashed_before: Optional[str] = None,
-        asset_type: Optional[str] = None,
-        updated_after: Optional[str] = None,
-        updated_before: Optional[str] = None,
-        visibility: Optional[str] = None,
-        with_deleted: Optional[bool] = None,
-        with_exif: Optional[bool] = None,
+        album_ids: List[str] = None,
+        city: str = None,
+        country: str = None,
+        created_after: str = None,
+        created_before: str = None,
+        device_id: str = None,
+        is_encoded: bool = None,
+        is_favorite: bool = None,
+        is_motion: bool = None,
+        is_not_in_album: bool = None,
+        is_offline: bool = None,
+        language: str = None,
+        lens_model: str = None,
+        make: str = None,
+        model: str = None,
+        person_ids: List[str] = None,
+        rating: int = None,
+        state: str = None,
+        tag_ids: List[str] = None,
+        taken_after: str = None,
+        taken_before: str = None,
+        trashed_after: str = None,
+        trashed_before: str = None,
+        asset_type: str = None,
+        updated_after: str = None,
+        updated_before: str = None,
+        visibility: str = None,
+        with_deleted: bool = None,
+        with_exif: bool = None,
     ) -> str:
         """
         Smart search using AI to find assets based on natural language queries.
+
+        Args:
+            query: Natural language search query (required)
+            limit: Maximum number of results to return (size parameter)
+            album_ids: Filter by album IDs
+            city: Filter by city
+            country: Filter by country
+            created_after: Filter by creation date (after) in ISO format
+            created_before: Filter by creation date (before) in ISO format
+            device_id: Filter by device ID
+            is_encoded: Filter by encoded status
+            is_favorite: Filter by favorite status
+            is_motion: Filter by motion status
+            is_not_in_album: Filter by not in album
+            is_offline: Filter by offline status
+            language: Language for the query
+            lens_model: Filter by lens model
+            make: Filter by camera make
+            model: Filter by camera model
+            person_ids: Filter by person IDs
+            rating: Filter by rating (-1 to 5)
+            state: Filter by state
+            tag_ids: Filter by tag IDs
+            taken_after: Filter by taken date (after) in ISO format
+            taken_before: Filter by taken date (before) in ISO format
+            trashed_after: Filter by trashed date (after) in ISO format
+            trashed_before: Filter by trashed date (before) in ISO format
+            asset_type: Asset type filter (IMAGE, VIDEO, AUDIO, OTHER)
+            updated_after: Filter by updated date (after) in ISO format
+            updated_before: Filter by updated date (before) in ISO format
+            visibility: Filter by visibility (archive, timeline, hidden, locked)
+            with_deleted: Include deleted assets
+            with_exif: Include EXIF data
+
+        Returns:
+            str: JSON string containing AI-powered search results
+
+        Example:
+            >>> results = await tools.search_smart("photos of my dog at the beach", 10, is_favorite=True)
         """
         try:
             search_query = {"query": query, "size": limit}
-            if page:
-                search_query["page"] = page
-            if library_id:
-                search_query["libraryId"] = library_id
             if album_ids:
                 search_query["albumIds"] = album_ids
             if city:
@@ -338,21 +358,84 @@ class ImmichTools:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     @lru_cache(maxsize=32)
-    async def search_random(self, limit: int = 10) -> str:
+    async def search_random(
+        self,
+        size: Optional[int] = None,
+        album_ids: Optional[List[str]] = None,
+        city: Optional[str] = None,
+        country: Optional[str] = None,
+        created_after: Optional[str] = None,
+        created_before: Optional[str] = None,
+        device_id: Optional[str] = None,
+        is_encoded: Optional[bool] = None,
+        is_favorite: Optional[bool] = None,
+        is_motion: Optional[bool] = None,
+        is_not_in_album: Optional[bool] = None,
+        is_offline: Optional[bool] = None,
+        lens_model: Optional[str] = None,
+        library_id: Optional[str] = None,
+        make: Optional[str] = None,
+        model: Optional[str] = None,
+        person_ids: Optional[List[str]] = None,
+        rating: Optional[int] = None,
+        state: Optional[str] = None,
+        tag_ids: Optional[List[str]] = None,
+        taken_after: Optional[str] = None,
+        taken_before: Optional[str] = None,
+        trashed_after: Optional[str] = None,
+        trashed_before: Optional[str] = None,
+        asset_type: Optional[str] = None,
+        updated_after: Optional[str] = None,
+        updated_before: Optional[str] = None,
+        visibility: Optional[str] = None,
+        with_deleted: Optional[bool] = None,
+        with_exif: Optional[bool] = None,
+        with_people: Optional[bool] = None,
+        with_stacked: Optional[bool] = None,
+    ) -> str:
         """
         Get random assets from the photo library with caching.
-
-        Args:
-            limit: Maximum number of random assets to return
-
-        Returns:
-            str: JSON string containing list of random assets
-
-        Example:
-            >>> random_assets = await tools.search_random(5)
         """
         try:
-            results = await self.client.search_random(limit)
+            search_query = {
+                k: v
+                for k, v in {
+                    "size": size,
+                    "albumIds": album_ids,
+                    "city": city,
+                    "country": country,
+                    "createdAfter": created_after,
+                    "createdBefore": created_before,
+                    "deviceId": device_id,
+                    "isEncoded": is_encoded,
+                    "isFavorite": is_favorite,
+                    "isMotion": is_motion,
+                    "isNotInAlbum": is_not_in_album,
+                    "isOffline": is_offline,
+                    "lensModel": lens_model,
+                    "libraryId": library_id,
+                    "make": make,
+                    "model": model,
+                    "personIds": person_ids,
+                    "rating": rating,
+                    "state": state,
+                    "tagIds": tag_ids,
+                    "takenAfter": taken_after,
+                    "takenBefore": taken_before,
+                    "trashedAfter": trashed_after,
+                    "trashedBefore": trashed_before,
+                    "type": asset_type,
+                    "updatedAfter": updated_after,
+                    "updatedBefore": updated_before,
+                    "visibility": visibility,
+                    "withDeleted": with_deleted,
+                    "withExif": with_exif,
+                    "withPeople": with_people,
+                    "withStacked": with_stacked,
+                }.items()
+                if v is not None
+            }
+            results = await self.client.search_random(search_query)
             return json.dumps(results)
         except Exception as e:
             logger.error(f"Error getting random assets: {e}")
@@ -469,10 +552,10 @@ class ImmichTools:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     @lru_cache(maxsize=128)
-    async def get_all_albums(self) -> str:
+    async def get_all_albums(self, asset_id: Optional[str] = None, shared: Optional[bool] = None) -> str:
         """Retrieves all albums from Immich with caching and rate limiting."""
         try:
-            albums = await self.client.get_all_albums()
+            albums = await self.client.get_all_albums(asset_id, shared)
             return json.dumps(albums)
         except Exception as e:
             logger.error(f"Error getting all albums: {e}")
@@ -486,10 +569,11 @@ class ImmichTools:
         album_name: str,
         description: str = "",
         asset_ids: Optional[List[str]] = None,
+        album_users: Optional[List[Dict[str, str]]] = None,
     ) -> str:
         """Creates a new album in Immich."""
         try:
-            album = await self.client.create_album(album_name, description, asset_ids)
+            album = await self.client.create_album(album_name, description, asset_ids, album_users)
             return json.dumps(album)
         except Exception as e:
             logger.error(f"Error creating album: {e}")
@@ -498,10 +582,10 @@ class ImmichTools:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    async def get_album_info(self, album_id: str) -> str:
+    async def get_album_info(self, album_id: str, key: Optional[str] = None, slug: Optional[str] = None, without_assets: Optional[bool] = None) -> str:
         """Gets information about a specific album with caching."""
         try:
-            album = await self.client.get_album(album_id)
+            album = await self.client.get_album(album_id, key, slug, without_assets)
             return json.dumps(album)
         except Exception as e:
             logger.error(f"Error getting album {album_id}: {e}")
@@ -522,10 +606,10 @@ class ImmichTools:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    async def add_assets_to_album(self, album_id: str, asset_ids: List[str]) -> str:
+    async def add_assets_to_album(self, album_id: str, asset_ids: List[str], key: Optional[str] = None, slug: Optional[str] = None) -> str:
         """Adds assets to an existing album."""
         try:
-            results = await self.client.add_assets_to_album(album_id, asset_ids)
+            results = await self.client.add_assets_to_album(album_id, asset_ids, key, slug)
             return json.dumps(results)
         except Exception as e:
             logger.error(f"Error adding assets to album {album_id}: {e}")
