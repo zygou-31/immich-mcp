@@ -276,6 +276,7 @@ async def test_add_assets_to_album(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.put(f"albums/{album_id}/assets").mock(
             return_value=httpx.Response(200, json=[{"success": True}])
+        )
 
         tools = ImmichTools(immich_config)
 
