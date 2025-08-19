@@ -219,12 +219,63 @@ async def test_get_album_info(immich_config: ImmichConfig):
 
 
 @pytest.mark.asyncio
+async def test_get_all_jobs_status(immich_config: ImmichConfig):
+    async with respx.mock:
+        respx.get(f"{immich_config.immich_base_url}/api/jobs").mock(
+            return_value=httpx.Response(200, json={"job1": "running"})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.get_all_jobs_status()
+
+        import json
+
+        assert json.loads(result) == {"job1": "running"}
+
+
+@pytest.mark.asyncio
+async def test_send_job_command(immich_config: ImmichConfig):
+    job_id = "job1"
+    command = "start"
+    async with respx.mock:
+        respx.put(f"{immich_config.immich_base_url}/api/jobs/{job_id}").mock(
+            return_value=httpx.Response(200, json={"status": "ok"})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.send_job_command(job_id=job_id, command=command)
+
+        import json
+
+        assert json.loads(result) == {"status": "ok"}
+
+
+@pytest.mark.asyncio
+async def test_run_asset_jobs(immich_config: ImmichConfig):
+    name = "regenerate-thumbnail"
+    asset_ids = ["1", "2"]
+    async with respx.mock:
+        respx.post(f"{immich_config.immich_base_url}/api/assets/jobs").mock(
+            return_value=httpx.Response(200, json={"status": "ok"})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.run_asset_jobs(name=name, asset_ids=asset_ids)
+
+        import json
+
+        assert json.loads(result) == {"status": "success"}
+
+
+@pytest.mark.asyncio
 async def test_add_assets_to_album(immich_config: ImmichConfig):
     album_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.put(f"albums/{album_id}/assets").mock(
             return_value=httpx.Response(200, json=[{"success": True}])
-        )
 
         tools = ImmichTools(immich_config)
 
