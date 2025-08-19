@@ -353,6 +353,45 @@ async def people_management():
 asyncio.run(people_management())
 ```
 
+### Job Handling
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def job_handling():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Get all jobs status
+        jobs_status = json.loads(await tools.get_all_jobs_status())
+        print(f"Jobs status: {jobs_status}")
+
+        # Send a command to a job
+        if "thumbnailGeneration" in jobs_status:
+            command_result = json.loads(
+                await tools.send_job_command("thumbnailGeneration", "start")
+            )
+            print(f"Command result: {command_result}")
+
+        # Run a job on specific assets
+        assets = json.loads(await tools.get_all_assets())
+        if assets:
+            asset_ids = [assets[0]["id"]]
+            run_job_result = json.loads(
+                await tools.run_asset_jobs("regenerate-thumbnail", asset_ids)
+            )
+            print(f"Run asset job result: {run_job_result}")
+
+asyncio.run(job_handling())
+```
+
 ## Error Handling
 
 ### Comprehensive Error Handling
