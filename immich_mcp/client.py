@@ -33,8 +33,8 @@ class ImmichClient:
         """
         self.config = config
         self.base_url = str(config.immich_base_url)
-        if not self.base_url.endswith('/'):
-            self.base_url += '/'
+        if not self.base_url.endswith("/"):
+            self.base_url += "/"
 
         self.headers = {
             "x-api-key": self.config.immich_api_key,
@@ -44,7 +44,9 @@ class ImmichClient:
     def _get_url(self, path: str) -> str:
         return urljoin(self.base_url, path)
 
-    async def get_asset(self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None) -> Dict[str, Any]:
+    async def get_asset(
+        self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Retrieve detailed information about a specific asset.
 
@@ -166,9 +168,7 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
-    async def search_places(
-        self, name: str
-    ) -> List[Dict[str, Any]]:
+    async def search_places(self, name: str) -> List[Dict[str, Any]]:
         """
         Search for places and locations in the photo library.
 
@@ -380,7 +380,9 @@ class ImmichClient:
             response.raise_for_status()
             return response.content
 
-    async def get_all_albums(self, asset_id: Optional[str] = None, shared: Optional[bool] = None) -> List[Dict[str, Any]]:
+    async def get_all_albums(
+        self, asset_id: Optional[str] = None, shared: Optional[bool] = None
+    ) -> List[Dict[str, Any]]:
         """
         Retrieve all albums from the Immich API.
 
@@ -447,7 +449,13 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
-    async def get_album(self, album_id: str, key: Optional[str] = None, slug: Optional[str] = None, without_assets: Optional[bool] = None) -> Dict[str, Any]:
+    async def get_album(
+        self,
+        album_id: str,
+        key: Optional[str] = None,
+        slug: Optional[str] = None,
+        without_assets: Optional[bool] = None,
+    ) -> Dict[str, Any]:
         """
         Get detailed information about a specific album.
 
@@ -501,7 +509,11 @@ class ImmichClient:
             response.raise_for_status()
 
     async def add_assets_to_album(
-        self, album_id: str, asset_ids: List[str], key: Optional[str] = None, slug: Optional[str] = None
+        self,
+        album_id: str,
+        asset_ids: List[str],
+        key: Optional[str] = None,
+        slug: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Add assets to an existing album.

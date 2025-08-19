@@ -184,7 +184,7 @@ For a more streamlined experience, you can use Docker Compose.
 
     ```
     IMMICH_BASE_URL=https://your-immich-server.com/api
-    IMMICH_API_KEY=your-immich-api-key-here
+    IMMICH_API_KEY=your-api-key-here
     AUTH_TOKEN=your-secret-auth-token-here
     ```
 
@@ -208,299 +208,164 @@ For a more streamlined experience, you can use Docker Compose.
 
 ### Available Tools
 
-#### `get_all_assets()`
-Retrieves all assets from your Immich library.
-
-**Returns:** JSON string containing array of asset objects
-
-**Example:**
-```python
-assets = await immich_tools.get_all_assets()
-```
-
-#### `get_asset_info(asset_id: str)`
+#### `get_asset_info(asset_id: str, key: Optional[str] = None, slug: Optional[str] = None)`
 Gets detailed information about a specific asset.
 
 **Parameters:**
-- `asset_id` (str): The unique identifier of the asset
+- `asset_id` (str): The unique identifier of the asset.
+- `key` (str, optional): The key for the asset, used for shared links.
+- `slug` (str, optional): The slug for the asset, used for shared links.
 
-**Returns:** JSON string containing asset details
+**Returns:** JSON string containing asset details.
 
-**Example:**
-```python
-asset_info = await immich_tools.get_asset_info("550e8400-e29b-41d4-a716-446655440000")
-```
+#### `search_metadata(...)`
+Search assets by metadata criteria. This tool accepts a large number of optional parameters based on the Immich API.
 
-#### `search_photos(query: str, limit: int = 20, album_id: str = None)`
-Searches for photos using smart search.
+**Example Parameters:**
+- `is_favorite: bool = True`
+- `city: str = "London"`
+- `person_ids: List[str] = ["..."]`
+- ... and many more. See the tool's docstring for a full list.
 
-**Parameters:**
-- `query` (str): Search query string
-- `limit` (int): Maximum number of results (default: 20)
-- `album_id` (str): Optional album ID to search within
+**Returns:** JSON string containing search results.
 
-**Returns:** JSON string containing search results
-
-**Example:**
-```python
-results = await immich_tools.search_photos("sunset beach", limit=10)
-```
-
-#### `get_all_albums()`
-Retrieves all albums from your Immich library.
-
-**Returns:** JSON string containing array of album objects
-
-**Example:**
-```python
-albums = await immich_tools.get_all_albums()
-```
-
-#### `create_album(album_name: str, description: str = "", assets: list = [])`
-Creates a new album.
-
-**Parameters:**
-- `album_name` (str): Name of the new album
-- `description` (str): Optional album description
-- `assets` (list): Optional list of asset IDs to include
-
-**Returns:** JSON string containing created album details
-
-**Example:**
-```python
-album = await immich_tools.create_album("Summer 2024", "Beach vacation photos")
-```
-
-#### `upload_photo(file_path: str, album_id: str = None)`
-Uploads a new photo to Immich.
-
-**Parameters:**
-- `file_path` (str): Path to the photo file
-- `album_id` (str): Optional album ID to add the photo to
-
-**Returns:** JSON string containing upload result
-
-**Example:**
-```python
-result = await immich_tools.upload_photo("/path/to/photo.jpg", album_id="album-uuid")
-```
-
-#### `search_metadata(query: str = "", asset_type: str = None, is_favorite: bool = None, limit: int = 100)`
-Search assets by metadata criteria.
-
-**Parameters:**
-- `query` (str): Search query string for metadata (filename, description, etc.)
-- `asset_type` (str): Filter by asset type (IMAGE, VIDEO, AUDIO, OTHER)
-- `is_favorite` (bool): Filter by favorite status
-- `limit` (int): Maximum number of results to return
-
-**Returns:** JSON string containing search results with assets and total count
-
-**Example:**
-```python
-results = await tools.search_metadata("beach", "IMAGE", True, 50)
-```
-
-#### `search_smart(query: str, limit: int = 100)`
+#### `search_smart(...)`
 Smart search using AI to find assets based on natural language queries.
 
 **Parameters:**
-- `query` (str): Natural language search query (e.g., "photos of my dog at the beach")
-- `limit` (int): Maximum number of results to return
+- `query` (str): Natural language search query.
+- ... and many other optional filter parameters. See the tool's docstring.
 
-**Returns:** JSON string containing AI-powered search results
+**Returns:** JSON string containing AI-powered search results.
 
-**Example:**
-```python
-results = await tools.search_smart("photos of my dog at the beach", 10)
-```
-
-#### `search_people(query: str = "", limit: int = 50)`
+#### `search_people(name: str, with_hidden: Optional[bool] = None)`
 Search for people in the photo library.
 
 **Parameters:**
-- `query` (str): Search query for person names
-- `limit` (int): Maximum number of results to return
+- `name` (str): The name of the person to search for.
+- `with_hidden` (bool, optional): Whether to include hidden people in the results.
 
-**Returns:** JSON string containing list of people matching the search criteria
+**Returns:** JSON string containing a list of people.
 
-**Example:**
-```python
-people = await tools.search_people("John", 10)
-```
-
-#### `search_places(query: str = "", limit: int = 50)`
+#### `search_places(name: str)`
 Search for places and locations in the photo library.
 
 **Parameters:**
-- `query` (str): Search query for place names
-- `limit` (int): Maximum number of results to return
+- `name` (str): The name of the place to search for.
 
-**Returns:** JSON string containing list of places matching the search criteria
+**Returns:** JSON string containing a list of places.
 
-**Example:**
-```python
-places = await tools.search_places("beach", 10)
-```
-
-#### `get_search_suggestions(query: str = "")`
+#### `get_search_suggestions(...)`
 Get search suggestions based on partial queries.
 
 **Parameters:**
-- `query` (str): Partial search query for suggestions
+- `type` (str): The type of suggestion to get (e.g., "CITY", "MAKE").
+- ... and other optional filter parameters. See the tool's docstring.
 
-**Returns:** JSON string containing list of search suggestions
+**Returns:** JSON string containing a list of suggestions.
 
-**Example:**
-```python
-suggestions = await tools.get_search_suggestions("be")
-```
+#### `search_random(...)`
+Get random assets from the photo library, with optional filters.
 
-#### `search_random(limit: int = 10)`
-Get random assets from the photo library.
+**Example Parameters:**
+- `size: int = 10`
+- `is_favorite: bool = True`
+- ... and many more. See the tool's docstring.
 
-**Parameters:**
-- `limit` (int): Maximum number of random assets to return
+**Returns:** JSON string containing a list of random assets.
 
-**Returns:** JSON string containing list of random assets
+#### `get_all_people(...)`
+Get all people from the photo library, with optional filters.
 
-**Example:**
-```python
-random_assets = await tools.search_random(5)
-```
+**Example Parameters:**
+- `page: int = 1`
+- `with_hidden: bool = False`
+- ... and other optional parameters. See the tool's docstring.
 
-#### `get_all_people(query: str = "", limit: int = 100, offset: int = 0)`
-Get all people from the photo library.
-
-**Parameters:**
-- `query` (str): Search query for filtering people by name
-- `limit` (int): Maximum number of people to return
-- `offset` (int): Number of people to skip for pagination
-
-**Returns:** JSON string containing people list and total count
-
-**Example:**
-```python
-people = await tools.get_all_people("John", 50, 0)
-```
+**Returns:** JSON string containing a list of people.
 
 #### `get_person(person_id: str)`
 Get detailed information about a specific person.
 
 **Parameters:**
-- `person_id` (str): The unique identifier of the person to retrieve
+- `person_id` (str): The unique identifier of the person.
 
-**Returns:** JSON string containing person details
-
-**Example:**
-```python
-person = await tools.get_person("550e8400-e29b-41d4-a716-446655440000")
-```
+**Returns:** JSON string containing person details.
 
 #### `get_person_statistics(person_id: str)`
 Get statistics for a specific person.
 
 **Parameters:**
-- `person_id` (str): The unique identifier of the person
+- `person_id` (str): The unique identifier of the person.
 
-**Returns:** JSON string containing statistics
-
-**Example:**
-```python
-stats = await tools.get_person_statistics("550e8400-e29b-41d4-a716-446655440000")
-```
+**Returns:** JSON string containing statistics.
 
 #### `get_person_thumbnail(person_id: str)`
-Get thumbnail image for a specific person.
+Get a thumbnail image for a specific person.
 
 **Parameters:**
-- `person_id` (str): The unique identifier of the person
+- `person_id` (str): The unique identifier of the person.
 
-**Returns:** Base64 encoded thumbnail image data
+**Returns:** Base64 encoded thumbnail image data.
 
-**Example:**
-```python
-thumbnail = await tools.get_person_thumbnail("550e8400-e29b-41d4-a716-446655440000")
-```
-
-#### `get_all_albums()`
+#### `get_all_albums(asset_id: Optional[str] = None, shared: Optional[bool] = None)`
 Retrieves all albums from your Immich library.
 
-**Returns:** JSON string containing array of album objects
+**Parameters:**
+- `asset_id` (str, optional): Filter albums containing this asset.
+- `shared` (bool, optional): Filter for shared or non-shared albums.
 
-**Example:**
-```python
-albums = await immich_tools.get_all_albums()
-```
+**Returns:** JSON string containing an array of album objects.
 
-#### `create_album(album_name: str, description: str = "", asset_ids: Optional[List[str]] = None)`
+#### `create_album(album_name: str, description: str = "", asset_ids: Optional[List[str]] = None, album_users: Optional[List[Dict[str, List[str]]]] = None)`
 Creates a new album.
 
 **Parameters:**
-- `album_name` (str): Name of the new album
-- `description` (str): Optional album description
-- `asset_ids` (list): Optional list of asset IDs to include
+- `album_name` (str): Name of the new album.
+- `description` (str, optional): Album description.
+- `asset_ids` (list, optional): List of asset IDs to include.
+- `album_users` (list, optional): List of users to share with.
 
-**Returns:** JSON string containing created album details
+**Returns:** JSON string containing created album details.
 
-**Example:**
-```python
-album = await immich_tools.create_album("Summer 2024", "Beach vacation photos")
-```
-
-#### `get_album_info(album_id: str)`
+#### `get_album_info(album_id: str, key: Optional[str] = None, slug: Optional[str] = None, without_assets: Optional[bool] = None)`
 Gets information about a specific album.
 
 **Parameters:**
-- `album_id` (str): The unique identifier of the album to retrieve
+- `album_id` (str): The unique identifier of the album.
+- `key` (str, optional): Key for shared links.
+- `slug` (str, optional): Slug for shared links.
+- `without_assets` (bool, optional): Exclude asset information.
 
-**Returns:** JSON string containing album details
-
-**Example:**
-```python
-album = await immich_tools.get_album_info("550e8400-e29b-41d4-a716-446655440000")
-```
+**Returns:** JSON string containing album details.
 
 #### `delete_album(album_id: str)`
 Deletes an album from Immich.
 
 **Parameters:**
-- `album_id` (str): The unique identifier of the album to delete
+- `album_id` (str): The unique identifier of the album to delete.
 
-**Returns:** JSON string containing status
+**Returns:** JSON string containing status.
 
-**Example:**
-```python
-await immich_tools.delete_album("550e8400-e29b-41d4-a716-446655440000")
-```
-
-#### `add_assets_to_album(album_id: str, asset_ids: List[str])`
+#### `add_assets_to_album(album_id: str, asset_ids: List[str], key: Optional[str] = None, slug: Optional[str] = None)`
 Adds assets to an existing album.
 
 **Parameters:**
-- `album_id` (str): The unique identifier of the album
-- `asset_ids` (list): List of asset IDs to add
+- `album_id` (str): The unique identifier of the album.
+- `asset_ids` (list): List of asset IDs to add.
+- `key` (str, optional): Key for shared links.
+- `slug` (str, optional): Slug for shared links.
 
-**Returns:** JSON string containing results
-
-**Example:**
-```python
-results = await immich_tools.add_assets_to_album("album-uuid", ["asset-uuid-1", "asset-uuid-2"])
-```
+**Returns:** JSON string containing results.
 
 #### `remove_assets_from_album(album_id: str, asset_ids: List[str])`
 Removes assets from an album.
 
 **Parameters:**
-- `album_id` (str): The unique identifier of the album
-- `asset_ids` (list): List of asset IDs to remove
+- `album_id` (str): The unique identifier of the album.
+- `asset_ids` (list): List of asset IDs to remove.
 
-**Returns:** JSON string containing results
-
-**Example:**
-```python
-results = await immich_tools.remove_assets_from_album("album-uuid", ["asset-uuid-1", "asset-uuid-2"])
-```
+**Returns:** JSON string containing results.
 
 ### API Endpoints
 

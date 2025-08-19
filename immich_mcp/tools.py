@@ -32,7 +32,9 @@ class ImmichTools:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    async def get_asset_info(self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None) -> str:
+    async def get_asset_info(
+        self, asset_id: str, key: Optional[str] = None, slug: Optional[str] = None
+    ) -> str:
         """
         Gets information about a specific asset with caching.
 
@@ -660,7 +662,9 @@ class ImmichTools:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     @lru_cache(maxsize=128)
-    async def get_all_albums(self, asset_id: Optional[str] = None, shared: Optional[bool] = None) -> str:
+    async def get_all_albums(
+        self, asset_id: Optional[str] = None, shared: Optional[bool] = None
+    ) -> str:
         """
         Retrieves all albums from Immich with caching and rate limiting.
 
@@ -696,7 +700,9 @@ class ImmichTools:
                          Example: [{"sharedUserIds": ["user-id-1", "user-id-2"]}]
         """
         try:
-            album = await self.client.create_album(album_name, description, asset_ids, album_users)
+            album = await self.client.create_album(
+                album_name, description, asset_ids, album_users
+            )
             return json.dumps(album)
         except Exception as e:
             logger.error(f"Error creating album: {e}")
@@ -705,7 +711,13 @@ class ImmichTools:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    async def get_album_info(self, album_id: str, key: Optional[str] = None, slug: Optional[str] = None, without_assets: Optional[bool] = None) -> str:
+    async def get_album_info(
+        self,
+        album_id: str,
+        key: Optional[str] = None,
+        slug: Optional[str] = None,
+        without_assets: Optional[bool] = None,
+    ) -> str:
         """
         Gets information about a specific album with caching.
 
@@ -737,7 +749,13 @@ class ImmichTools:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    async def add_assets_to_album(self, album_id: str, asset_ids: List[str], key: Optional[str] = None, slug: Optional[str] = None) -> str:
+    async def add_assets_to_album(
+        self,
+        album_id: str,
+        asset_ids: List[str],
+        key: Optional[str] = None,
+        slug: Optional[str] = None,
+    ) -> str:
         """
         Adds assets to an existing album.
 
@@ -748,7 +766,9 @@ class ImmichTools:
             slug: The slug for the album, used for shared links.
         """
         try:
-            results = await self.client.add_assets_to_album(album_id, asset_ids, key, slug)
+            results = await self.client.add_assets_to_album(
+                album_id, asset_ids, key, slug
+            )
             return json.dumps(results)
         except Exception as e:
             logger.error(f"Error adding assets to album {album_id}: {e}")

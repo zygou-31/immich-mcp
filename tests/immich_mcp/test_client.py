@@ -35,9 +35,7 @@ async def test_get_asset_success(immich_config: ImmichConfig):
 async def test_get_asset_error(immich_config: ImmichConfig):
     asset_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
-        mock.get(f"asset/{asset_id}").mock(
-            return_value=httpx.Response(404)
-        )
+        mock.get(f"asset/{asset_id}").mock(return_value=httpx.Response(404))
 
         client = ImmichClient(immich_config)
         with pytest.raises(httpx.HTTPStatusError):
@@ -98,9 +96,7 @@ async def test_get_person_success(immich_config: ImmichConfig):
 async def test_get_person_error(immich_config: ImmichConfig):
     person_id = "999"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
-        mock.get(f"people/{person_id}").mock(
-            return_value=httpx.Response(404)
-        )
+        mock.get(f"people/{person_id}").mock(return_value=httpx.Response(404))
 
         client = ImmichClient(immich_config)
         with pytest.raises(httpx.HTTPStatusError):
@@ -134,7 +130,9 @@ async def test_get_person_statistics_success(immich_config: ImmichConfig):
 async def test_get_person_thumbnail_success(immich_config: ImmichConfig):
     person_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
-        mock.get(f"people/{person_id}/thumbnail").mock(return_value=httpx.Response(200, content=b"fake_thumbnail_data"))
+        mock.get(f"people/{person_id}/thumbnail").mock(
+            return_value=httpx.Response(200, content=b"fake_thumbnail_data")
+        )
 
         client = ImmichClient(immich_config)
         thumbnail = await client.get_person_thumbnail(person_id)
@@ -265,9 +263,7 @@ async def test_get_album_info_success(immich_config: ImmichConfig):
 async def test_delete_album_success(immich_config: ImmichConfig):
     album_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
-        mock.delete(f"albums/{album_id}").mock(
-            return_value=httpx.Response(204)
-        )
+        mock.delete(f"albums/{album_id}").mock(return_value=httpx.Response(204))
 
         client = ImmichClient(immich_config)
         await client.delete_album(album_id)

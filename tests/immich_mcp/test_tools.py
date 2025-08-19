@@ -81,10 +81,7 @@ async def test_search_smart(immich_config: ImmichConfig):
 async def test_search_people(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.get("search/person", params={"name": "test"}).mock(
-            return_value=httpx.Response(
-                200,
-                json=[{"id": "1", "name": "test"}]
-            )
+            return_value=httpx.Response(200, json=[{"id": "1", "name": "test"}])
         )
 
         tools = ImmichTools(immich_config)
@@ -101,10 +98,7 @@ async def test_search_people(immich_config: ImmichConfig):
 async def test_search_places(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.get("search/places", params={"name": "test"}).mock(
-            return_value=httpx.Response(
-                200,
-                json=[{"id": "1", "name": "test"}]
-            )
+            return_value=httpx.Response(200, json=[{"id": "1", "name": "test"}])
         )
 
         tools = ImmichTools(immich_config)
@@ -121,10 +115,7 @@ async def test_search_places(immich_config: ImmichConfig):
 async def test_get_search_suggestions(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.get("search/suggestions", params={"type": "city"}).mock(
-            return_value=httpx.Response(
-                200,
-                json=["test"]
-            )
+            return_value=httpx.Response(200, json=["test"])
         )
 
         tools = ImmichTools(immich_config)
@@ -142,8 +133,7 @@ async def test_search_random(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.post("search/random").mock(
             return_value=httpx.Response(
-                200,
-                json=[{"id": "1", "originalFileName": "test.jpg"}]
+                200, json=[{"id": "1", "originalFileName": "test.jpg"}]
             )
         )
 
@@ -162,8 +152,7 @@ async def test_get_all_people(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.get("people").mock(
             return_value=httpx.Response(
-                200,
-                json={"people": [{"id": "1", "name": "test"}]}
+                200, json={"people": [{"id": "1", "name": "test"}]}
             )
         )
 
@@ -181,10 +170,7 @@ async def test_get_all_people(immich_config: ImmichConfig):
 async def test_get_all_albums(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.get("albums").mock(
-            return_value=httpx.Response(
-                200,
-                json=[{"id": "1", "albumName": "test"}]
-            )
+            return_value=httpx.Response(200, json=[{"id": "1", "albumName": "test"}])
         )
 
         tools = ImmichTools(immich_config)
@@ -201,10 +187,7 @@ async def test_get_all_albums(immich_config: ImmichConfig):
 async def test_create_album(immich_config: ImmichConfig):
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.post("albums").mock(
-            return_value=httpx.Response(
-                201,
-                json={"id": "1", "albumName": "test"}
-            )
+            return_value=httpx.Response(201, json={"id": "1", "albumName": "test"})
         )
 
         tools = ImmichTools(immich_config)
@@ -222,10 +205,7 @@ async def test_get_album_info(immich_config: ImmichConfig):
     album_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.get(f"albums/{album_id}").mock(
-            return_value=httpx.Response(
-                200,
-                json={"id": "1", "albumName": "test"}
-            )
+            return_value=httpx.Response(200, json={"id": "1", "albumName": "test"})
         )
 
         tools = ImmichTools(immich_config)
@@ -243,10 +223,7 @@ async def test_add_assets_to_album(immich_config: ImmichConfig):
     album_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
         mock.put(f"albums/{album_id}/assets").mock(
-            return_value=httpx.Response(
-                200,
-                json=[{"success": True}]
-            )
+            return_value=httpx.Response(200, json=[{"success": True}])
         )
 
         tools = ImmichTools(immich_config)
