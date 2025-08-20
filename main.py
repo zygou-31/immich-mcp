@@ -3,7 +3,6 @@ from mcp.server.fastmcp.tools.base import Tool
 from fastapi import FastAPI, Depends, HTTPException, status, Request, APIRouter
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
-import httpx
 import logging
 import contextlib
 import os
@@ -48,7 +47,9 @@ async def lifespan(app: FastAPI):
 
         # Dynamically create tools from ImmichTools methods
         tools = []
-        for name, method in inspect.getmembers(immich_tools, predicate=inspect.ismethod):
+        for name, method in inspect.getmembers(
+            immich_tools, predicate=inspect.ismethod
+        ):
             if not name.startswith("_"):
                 tools.append(Tool.from_function(method))
 
