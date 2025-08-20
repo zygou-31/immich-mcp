@@ -286,3 +286,144 @@ async def test_add_assets_to_album(immich_config: ImmichConfig):
 
         response = json.loads(result)
         assert response[0]["success"] is True
+
+
+@pytest.mark.asyncio
+async def test_search_memories(immich_config: ImmichConfig):
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.get("memories").mock(
+            return_value=httpx.Response(200, json=[{"id": "1", "title": "test"}])
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.search_memories()
+
+        import json
+
+        response = json.loads(result)
+        assert response[0]["id"] == "1"
+
+
+@pytest.mark.asyncio
+async def test_create_memory(immich_config: ImmichConfig):
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.post("memories").mock(
+            return_value=httpx.Response(201, json={"id": "1", "title": "test"})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.create_memory(memory_data={"title": "test"})
+
+        import json
+
+        response = json.loads(result)
+        assert response["id"] == "1"
+
+
+@pytest.mark.asyncio
+async def test_get_memory_statistics(immich_config: ImmichConfig):
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.get("memories/statistics").mock(
+            return_value=httpx.Response(200, json={"total": 1})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.get_memory_statistics()
+
+        import json
+
+        response = json.loads(result)
+        assert response["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_get_memory(immich_config: ImmichConfig):
+    memory_id = "1"
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.get(f"memories/{memory_id}").mock(
+            return_value=httpx.Response(200, json={"id": "1", "title": "test"})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.get_memory(memory_id=memory_id)
+
+        import json
+
+        response = json.loads(result)
+        assert response["id"] == "1"
+
+
+@pytest.mark.asyncio
+async def test_update_memory(immich_config: ImmichConfig):
+    memory_id = "1"
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.put(f"memories/{memory_id}").mock(
+            return_value=httpx.Response(200, json={"id": "1", "title": "updated"})
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.update_memory(
+            memory_id=memory_id, memory_data={"title": "updated"}
+        )
+
+        import json
+
+        response = json.loads(result)
+        assert response["title"] == "updated"
+
+
+@pytest.mark.asyncio
+async def test_delete_memory(immich_config: ImmichConfig):
+    memory_id = "1"
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.delete(f"memories/{memory_id}").mock(return_value=httpx.Response(204))
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.delete_memory(memory_id=memory_id)
+
+        import json
+
+        response = json.loads(result)
+        assert response["status"] == "success"
+
+
+@pytest.mark.asyncio
+async def test_add_memory_assets(immich_config: ImmichConfig):
+    memory_id = "1"
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.put(f"memories/{memory_id}/assets").mock(
+            return_value=httpx.Response(200, json=[{"success": True}])
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.add_memory_assets(memory_id=memory_id, asset_ids=["1"])
+
+        import json
+
+        response = json.loads(result)
+        assert response[0]["success"] is True
+
+
+@pytest.mark.asyncio
+async def test_remove_memory_assets(immich_config: ImmichConfig):
+    memory_id = "1"
+    async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
+        mock.delete(f"memories/{memory_id}/assets").mock(
+            return_value=httpx.Response(200, json=[{"success": True}])
+        )
+
+        tools = ImmichTools(immich_config)
+
+        result = await tools.remove_memory_assets(memory_id=memory_id, asset_ids=["1"])
+
+        import json
+
+        response = json.loads(result)
+        assert response[0]["success"] is True

@@ -376,6 +376,79 @@ Removes assets from an album.
 
 **Returns:** JSON string containing results.
 
+#### `search_memories(for_date: Optional[str] = None, is_saved: Optional[bool] = None, is_trashed: Optional[bool] = None, memory_type: Optional[str] = None)`
+Search for memories.
+
+**Parameters:**
+- `for_date` (str, optional): The date to search for memories for.
+- `is_saved` (bool, optional): Whether to search for saved memories.
+- `is_trashed` (bool, optional): Whether to search for trashed memories.
+- `memory_type` (str, optional): The type of memory to search for.
+
+**Returns:** JSON string containing a list of memories.
+
+#### `create_memory(memory_data: Dict[str, Any])`
+Create a new memory.
+
+**Parameters:**
+- `memory_data` (dict): The data for the new memory.
+
+**Returns:** JSON string containing the created memory.
+
+#### `get_memory_statistics(for_date: Optional[str] = None, is_saved: Optional[bool] = None, is_trashed: Optional[bool] = None, memory_type: Optional[str] = None)`
+Get memory statistics.
+
+**Parameters:**
+- `for_date` (str, optional): The date to get statistics for.
+- `is_saved` (bool, optional): Whether to get statistics for saved memories.
+- `is_trashed` (bool, optional): Whether to get statistics for trashed memories.
+- `memory_type` (str, optional): The type of memory to get statistics for.
+
+**Returns:** JSON string containing the memory statistics.
+
+#### `get_memory(memory_id: str)`
+Get a specific memory.
+
+**Parameters:**
+- `memory_id` (str): The ID of the memory.
+
+**Returns:** JSON string containing the memory.
+
+#### `update_memory(memory_id: str, memory_data: Dict[str, Any])`
+Update a memory.
+
+**Parameters:**
+- `memory_id` (str): The ID of the memory.
+- `memory_data` (dict): The data to update the memory with.
+
+**Returns:** JSON string containing the updated memory.
+
+#### `delete_memory(memory_id: str)`
+Delete a memory.
+
+**Parameters:**
+- `memory_id` (str): The ID of the memory.
+
+**Returns:** JSON string containing the status of the operation.
+
+#### `add_memory_assets(memory_id: str, asset_ids: List[str])`
+Add assets to a memory.
+
+**Parameters:**
+- `memory_id` (str): The ID of the memory.
+- `asset_ids` (list): The IDs of the assets to add.
+
+**Returns:** JSON string containing the response from the server.
+
+#### `remove_memory_assets(memory_id: str, asset_ids: List[str])`
+Remove assets from a memory.
+
+**Parameters:**
+- `memory_id` (str): The ID of the memory.
+- `asset_ids` (list): The IDs of the assets to remove.
+
+**Returns:** JSON string containing the response from the server.
+
 ### API Endpoints
 
 When running the server, you can access:

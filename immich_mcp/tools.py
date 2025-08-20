@@ -1,7 +1,7 @@
 from immich_mcp.client import ImmichClient
 import json
 import logging
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from functools import lru_cache
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -848,4 +848,192 @@ class ImmichTools:
             return json.dumps({"status": "success"})
         except Exception as e:
             logger.error(f"Error running asset job {name}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def search_memories(
+        self,
+        for_date: Optional[str] = None,
+        is_saved: Optional[bool] = None,
+        is_trashed: Optional[bool] = None,
+        memory_type: Optional[str] = None,
+    ) -> str:
+        """
+        Search for memories.
+
+        Args:
+            for_date: The date to search for memories for.
+            is_saved: Whether to search for saved memories.
+            is_trashed: Whether to search for trashed memories.
+            memory_type: The type of memory to search for.
+
+        Returns:
+            str: JSON string containing a list of memories.
+        """
+        try:
+            results = await self.client.search_memories(
+                for_date, is_saved, is_trashed, memory_type
+            )
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error searching memories: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_memory(self, memory_data: Dict[str, Any]) -> str:
+        """
+        Create a new memory.
+
+        Args:
+            memory_data: The data for the new memory.
+
+        Returns:
+            str: JSON string containing the created memory.
+        """
+        try:
+            result = await self.client.create_memory(memory_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating memory: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=64)
+    async def get_memory_statistics(
+        self,
+        for_date: Optional[str] = None,
+        is_saved: Optional[bool] = None,
+        is_trashed: Optional[bool] = None,
+        memory_type: Optional[str] = None,
+    ) -> str:
+        """
+        Get memory statistics.
+
+        Args:
+            for_date: The date to get statistics for.
+            is_saved: Whether to get statistics for saved memories.
+            is_trashed: Whether to get statistics for trashed memories.
+            memory_type: The type of memory to get statistics for.
+
+        Returns:
+            str: JSON string containing the memory statistics.
+        """
+        try:
+            stats = await self.client.get_memory_statistics(
+                for_date, is_saved, is_trashed, memory_type
+            )
+            return json.dumps(stats)
+        except Exception as e:
+            logger.error(f"Error getting memory statistics: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_memory(self, memory_id: str) -> str:
+        """
+        Get a specific memory.
+
+        Args:
+            memory_id: The ID of the memory.
+
+        Returns:
+            str: JSON string containing the memory.
+        """
+        try:
+            memory = await self.client.get_memory(memory_id)
+            return json.dumps(memory)
+        except Exception as e:
+            logger.error(f"Error getting memory {memory_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_memory(self, memory_id: str, memory_data: Dict[str, Any]) -> str:
+        """
+        Update a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+            memory_data: The data to update the memory with.
+
+        Returns:
+            str: JSON string containing the updated memory.
+        """
+        try:
+            result = await self.client.update_memory(memory_id, memory_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating memory {memory_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_memory(self, memory_id: str) -> str:
+        """
+        Delete a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+
+        Returns:
+            str: JSON string containing the status of the operation.
+        """
+        try:
+            await self.client.delete_memory(memory_id)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting memory {memory_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def add_memory_assets(self, memory_id: str, asset_ids: List[str]) -> str:
+        """
+        Add assets to a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+            asset_ids: The IDs of the assets to add.
+
+        Returns:
+            str: JSON string containing the response from the server.
+        """
+        try:
+            results = await self.client.add_memory_assets(memory_id, asset_ids)
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error adding assets to memory {memory_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def remove_memory_assets(self, memory_id: str, asset_ids: List[str]) -> str:
+        """
+        Remove assets from a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+            asset_ids: The IDs of the assets to remove.
+
+        Returns:
+            str: JSON string containing the response from the server.
+        """
+        try:
+            results = await self.client.remove_memory_assets(memory_id, asset_ids)
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error removing assets from memory {memory_id}: {e}")
             return json.dumps({"error": str(e)})

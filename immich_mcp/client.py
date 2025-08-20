@@ -58,6 +58,206 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
+    async def search_memories(
+        self,
+        for_date: Optional[str] = None,
+        is_saved: Optional[bool] = None,
+        is_trashed: Optional[bool] = None,
+        memory_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for memories.
+
+        Args:
+            for_date: The date to search for memories for.
+            is_saved: Whether to search for saved memories.
+            is_trashed: Whether to search for trashed memories.
+            memory_type: The type of memory to search for.
+
+        Returns:
+            List[Dict[str, Any]]: A list of memories.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if for_date is not None:
+                params["for"] = for_date
+            if is_saved is not None:
+                params["isSaved"] = is_saved
+            if is_trashed is not None:
+                params["isTrashed"] = is_trashed
+            if memory_type is not None:
+                params["type"] = memory_type
+            url = self._get_url("memories")
+            response = await client.get(
+                url,
+                headers=self.headers,
+                params=params,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_memory(self, memory_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new memory.
+
+        Args:
+            memory_data: The data for the new memory.
+
+        Returns:
+            Dict[str, Any]: The created memory.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("memories")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=memory_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_memory_statistics(
+        self,
+        for_date: Optional[str] = None,
+        is_saved: Optional[bool] = None,
+        is_trashed: Optional[bool] = None,
+        memory_type: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get memory statistics.
+
+        Args:
+            for_date: The date to get statistics for.
+            is_saved: Whether to get statistics for saved memories.
+            is_trashed: Whether to get statistics for trashed memories.
+            memory_type: The type of memory to get statistics for.
+
+        Returns:
+            Dict[str, Any]: The memory statistics.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if for_date is not None:
+                params["for"] = for_date
+            if is_saved is not None:
+                params["isSaved"] = is_saved
+            if is_trashed is not None:
+                params["isTrashed"] = is_trashed
+            if memory_type is not None:
+                params["type"] = memory_type
+            url = self._get_url("memories/statistics")
+            response = await client.get(
+                url,
+                headers=self.headers,
+                params=params,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_memory(self, memory_id: str) -> Dict[str, Any]:
+        """
+        Get a specific memory.
+
+        Args:
+            memory_id: The ID of the memory.
+
+        Returns:
+            Dict[str, Any]: The memory.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"memories/{memory_id}")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_memory(
+        self, memory_id: str, memory_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+            memory_data: The data to update the memory with.
+
+        Returns:
+            Dict[str, Any]: The updated memory.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"memories/{memory_id}")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=memory_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_memory(self, memory_id: str) -> None:
+        """
+        Delete a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"memories/{memory_id}")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def add_memory_assets(
+        self, memory_id: str, asset_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Add assets to a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+            asset_ids: The IDs of the assets to add.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"memories/{memory_id}/assets")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json={"ids": asset_ids},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def remove_memory_assets(
+        self, memory_id: str, asset_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Remove assets from a memory.
+
+        Args:
+            memory_id: The ID of the memory.
+            asset_ids: The IDs of the assets to remove.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"memories/{memory_id}/assets")
+            response = await client.request(
+                "DELETE",
+                url,
+                headers=self.headers,
+                json={"ids": asset_ids},
+            )
+            response.raise_for_status()
+            return response.json()
+
     async def send_job_command(
         self, job_id: str, command: str, force: bool = False
     ) -> Dict[str, Any]:
