@@ -1037,3 +1037,1019 @@ class ImmichTools:
         except Exception as e:
             logger.error(f"Error removing assets from memory {memory_id}: {e}")
             return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def search_users_admin(
+        self, user_id: Optional[str] = None, with_deleted: Optional[bool] = None
+    ) -> str:
+        """
+        Search for users with admin privileges.
+
+        Args:
+            user_id: The ID of the user to search for.
+            with_deleted: Whether to include deleted users in the results.
+        """
+        try:
+            results = await self.client.search_users_admin(user_id, with_deleted)
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error searching users with admin privileges: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_user_admin(self, user_data: Dict[str, Any]) -> str:
+        """
+        Create a new user with admin privileges.
+
+        Args:
+            user_data: The data for the new user.
+        """
+        try:
+            result = await self.client.create_user_admin(user_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating user with admin privileges: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_user_admin(self, user_id: str) -> str:
+        """
+        Get detailed information about a specific user with admin privileges.
+
+        Args:
+            user_id: The unique identifier of the user to retrieve.
+        """
+        try:
+            user = await self.client.get_user_admin(user_id)
+            return json.dumps(user)
+        except Exception as e:
+            logger.error(f"Error getting user {user_id} with admin privileges: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_user_admin(self, user_id: str, user_data: Dict[str, Any]) -> str:
+        """
+        Update a user with admin privileges.
+
+        Args:
+            user_id: The ID of the user to update.
+            user_data: The data to update the user with.
+        """
+        try:
+            result = await self.client.update_user_admin(user_id, user_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating user {user_id} with admin privileges: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_user_admin(self, user_id: str, force: bool = False) -> str:
+        """
+        Delete a user with admin privileges.
+
+        Args:
+            user_id: The ID of the user to delete.
+            force: Whether to force the deletion.
+        """
+        try:
+            result = await self.client.delete_user_admin(user_id, force)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error deleting user {user_id} with admin privileges: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_user_preferences_admin(self, user_id: str) -> str:
+        """
+        Get preferences for a specific user with admin privileges.
+
+        Args:
+            user_id: The unique identifier of the user.
+        """
+        try:
+            preferences = await self.client.get_user_preferences_admin(user_id)
+            return json.dumps(preferences)
+        except Exception as e:
+            logger.error(
+                f"Error getting preferences for user {user_id} with admin privileges: {e}"
+            )
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_user_preferences_admin(
+        self, user_id: str, preferences_data: Dict[str, Any]
+    ) -> str:
+        """
+        Update preferences for a specific user with admin privileges.
+
+        Args:
+            user_id: The ID of the user.
+            preferences_data: The data to update the preferences with.
+        """
+        try:
+            result = await self.client.update_user_preferences_admin(
+                user_id, preferences_data
+            )
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(
+                f"Error updating preferences for user {user_id} with admin privileges: {e}"
+            )
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def restore_user_admin(self, user_id: str) -> str:
+        """
+        Restore a deleted user with admin privileges.
+
+        Args:
+            user_id: The ID of the user to restore.
+        """
+        try:
+            result = await self.client.restore_user_admin(user_id)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error restoring user {user_id} with admin privileges: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=64)
+    async def get_user_statistics_admin(
+        self,
+        user_id: str,
+        is_favorite: Optional[bool] = None,
+        is_trashed: Optional[bool] = None,
+        visibility: Optional[str] = None,
+    ) -> str:
+        """
+        Get statistics for a specific user with admin privileges.
+
+        Args:
+            user_id: The unique identifier of the user.
+            is_favorite: Whether to filter by favorite status.
+            is_trashed: Whether to filter by trashed status.
+            visibility: The visibility of the assets.
+        """
+        try:
+            stats = await self.client.get_user_statistics_admin(
+                user_id, is_favorite, is_trashed, visibility
+            )
+            return json.dumps(stats)
+        except Exception as e:
+            logger.error(
+                f"Error getting statistics for user {user_id} with admin privileges: {e}"
+            )
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def search_users(self) -> str:
+        """
+        Search for users.
+        """
+        try:
+            results = await self.client.search_users()
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error searching users: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=1)
+    async def get_my_user(self) -> str:
+        """
+        Get the current user's information.
+        """
+        try:
+            result = await self.client.get_my_user()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting current user's information: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_my_user(self, user_data: Dict[str, Any]) -> str:
+        """
+        Update the current user's information.
+
+        Args:
+            user_data: The data to update the user with.
+        """
+        try:
+            result = await self.client.update_my_user(user_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating current user's information: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_user(self, user_id: str) -> str:
+        """
+        Get a user's information.
+
+        Args:
+            user_id: The ID of the user to retrieve.
+        """
+        try:
+            result = await self.client.get_user(user_id)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting user {user_id}'s information: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_user_license(self) -> str:
+        """
+        Delete the current user's license.
+        """
+        try:
+            await self.client.delete_user_license()
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting current user's license: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=1)
+    async def get_user_license(self) -> str:
+        """
+        Get the current user's license.
+        """
+        try:
+            result = await self.client.get_user_license()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting current user's license: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def set_user_license(self, license_key: str) -> str:
+        """
+        Set the current user's license.
+
+        Args:
+            license_key: The license key to set.
+        """
+        try:
+            result = await self.client.set_user_license(license_key)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error setting current user's license: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_user_onboarding(self) -> str:
+        """
+        Delete the current user's onboarding status.
+        """
+        try:
+            await self.client.delete_user_onboarding()
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting current user's onboarding status: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=1)
+    async def get_user_onboarding(self) -> str:
+        """
+        Get the current user's onboarding status.
+        """
+        try:
+            result = await self.client.get_user_onboarding()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting current user's onboarding status: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def set_user_onboarding(self, onboarding_data: Dict[str, Any]) -> str:
+        """
+        Set the current user's onboarding status.
+
+        Args:
+            onboarding_data: The onboarding data to set.
+        """
+        try:
+            result = await self.client.set_user_onboarding(onboarding_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error setting current user's onboarding status: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=1)
+    async def get_my_preferences(self) -> str:
+        """
+        Get the current user's preferences.
+        """
+        try:
+            result = await self.client.get_my_preferences()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting current user's preferences: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_my_preferences(self, preferences_data: Dict[str, Any]) -> str:
+        """
+        Update the current user's preferences.
+
+        Args:
+            preferences_data: The preferences to update.
+        """
+        try:
+            result = await self.client.update_my_preferences(preferences_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating current user's preferences: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_profile_image(self) -> str:
+        """
+        Delete the current user's profile image.
+        """
+        try:
+            await self.client.delete_profile_image()
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting current user's profile image: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_profile_image(self, file_path: str) -> str:
+        """
+        Create a profile image for the current user.
+
+        Args:
+            file_path: The path to the image file.
+        """
+        try:
+            result = await self.client.create_profile_image(file_path)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating profile image for current user: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def get_profile_image(self, user_id: str) -> str:
+        """
+        Get a user's profile image.
+
+        Args:
+            user_id: The ID of the user.
+        """
+        try:
+            import base64
+
+            image_data = await self.client.get_profile_image(user_id)
+            return base64.b64encode(image_data).decode("utf-8")
+        except Exception as e:
+            logger.error(f"Error getting profile image for user {user_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_api_keys(self) -> str:
+        """
+        Get all API keys.
+        """
+        try:
+            results = await self.client.get_api_keys()
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error getting API keys: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_api_key(self, key_data: Dict[str, Any]) -> str:
+        """
+        Create a new API key.
+
+        Args:
+            key_data: The data for the new API key.
+        """
+        try:
+            result = await self.client.create_api_key(key_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating API key: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_api_key(self, key_id: str) -> str:
+        """
+        Get an API key.
+
+        Args:
+            key_id: The ID of the API key to retrieve.
+        """
+        try:
+            result = await self.client.get_api_key(key_id)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting API key {key_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_api_key(self, key_id: str, key_data: Dict[str, Any]) -> str:
+        """
+        Update an API key.
+
+        Args:
+            key_id: The ID of the API key to update.
+            key_data: The data to update the API key with.
+        """
+        try:
+            result = await self.client.update_api_key(key_id, key_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating API key {key_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_api_key(self, key_id: str) -> str:
+        """
+        Delete an API key.
+
+        Args:
+            key_id: The ID of the API key to delete.
+        """
+        try:
+            await self.client.delete_api_key(key_id)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting API key {key_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def sign_up_admin(self, user_data: Dict[str, Any]) -> str:
+        """
+        Sign up a new admin user.
+
+        Args:
+            user_data: The data for the new admin user.
+        """
+        try:
+            result = await self.client.sign_up_admin(user_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error signing up admin: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def change_password(self, password_data: Dict[str, Any]) -> str:
+        """
+        Change the current user's password.
+
+        Args:
+            password_data: The data for changing the password.
+        """
+        try:
+            result = await self.client.change_password(password_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error changing password: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def login(self, login_data: Dict[str, Any]) -> str:
+        """
+        Log in a user.
+
+        Args:
+            login_data: The data for logging in.
+        """
+        try:
+            result = await self.client.login(login_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error logging in: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def logout(self) -> str:
+        """
+        Log out the current user.
+        """
+        try:
+            result = await self.client.logout()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error logging out: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def reset_pin_code(self, pin_code_data: Dict[str, Any]) -> str:
+        """
+        Reset the current user's pin code.
+
+        Args:
+            pin_code_data: The data for resetting the pin code.
+        """
+        try:
+            await self.client.reset_pin_code(pin_code_data)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error resetting pin code: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def setup_pin_code(self, pin_code_data: Dict[str, Any]) -> str:
+        """
+        Set up a pin code for the current user.
+
+        Args:
+            pin_code_data: The data for setting up the pin code.
+        """
+        try:
+            await self.client.setup_pin_code(pin_code_data)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error setting up pin code: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def change_pin_code(self, pin_code_data: Dict[str, Any]) -> str:
+        """
+        Change the current user's pin code.
+
+        Args:
+            pin_code_data: The data for changing the pin code.
+        """
+        try:
+            await self.client.change_pin_code(pin_code_data)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error changing pin code: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def lock_auth_session(self) -> str:
+        """
+        Lock the current user's authentication session.
+        """
+        try:
+            await self.client.lock_auth_session()
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error locking authentication session: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def unlock_auth_session(self, unlock_data: Dict[str, Any]) -> str:
+        """
+        Unlock the current user's authentication session.
+
+        Args:
+            unlock_data: The data for unlocking the session.
+        """
+        try:
+            await self.client.unlock_auth_session(unlock_data)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error unlocking authentication session: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=1)
+    async def get_auth_status(self) -> str:
+        """
+        Get the authentication status of the current user.
+        """
+        try:
+            result = await self.client.get_auth_status()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting authentication status: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def validate_access_token(self) -> str:
+        """
+        Validate the current access token.
+        """
+        try:
+            result = await self.client.validate_access_token()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error validating access token: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_faces(self, asset_id: str) -> str:
+        """
+        Get all faces for a given asset.
+
+        Args:
+            asset_id: The ID of the asset.
+        """
+        try:
+            results = await self.client.get_faces(asset_id)
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error getting faces for asset {asset_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_face(self, face_data: Dict[str, Any]) -> str:
+        """
+        Create a new face.
+
+        Args:
+            face_data: The data for the new face.
+        """
+        try:
+            result = await self.client.create_face(face_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating face: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_face(self, face_id: str) -> str:
+        """
+        Delete a face.
+
+        Args:
+            face_id: The ID of the face to delete.
+        """
+        try:
+            await self.client.delete_face(face_id)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting face {face_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def reassign_faces_by_id(self, face_id: str, person_id: str) -> str:
+        """
+        Reassign a face to a person.
+
+        Args:
+            face_id: The ID of the face to reassign.
+            person_id: The ID of the person to reassign the face to.
+        """
+        try:
+            result = await self.client.reassign_faces_by_id(face_id, person_id)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error reassigning face {face_id} to person {person_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_person(self, person_data: Dict[str, Any]) -> str:
+        """
+        Create a new person.
+
+        Args:
+            person_data: The data for the new person.
+        """
+        try:
+            result = await self.client.create_person(person_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating person: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_people(self, people_data: Dict[str, Any]) -> str:
+        """
+        Update people.
+
+        Args:
+            people_data: The data for updating people.
+        """
+        try:
+            result = await self.client.update_people(people_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating people: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_people(self, people_data: Dict[str, Any]) -> str:
+        """
+        Delete people.
+
+        Args:
+            people_data: The data for deleting people.
+        """
+        try:
+            await self.client.delete_people(people_data)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting people: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_person(self, person_id: str, person_data: Dict[str, Any]) -> str:
+        """
+        Update a person.
+
+        Args:
+            person_id: The ID of the person to update.
+            person_data: The data to update the person with.
+        """
+        try:
+            result = await self.client.update_person(person_id, person_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating person {person_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def delete_person(self, person_id: str) -> str:
+        """
+        Delete a person.
+
+        Args:
+            person_id: The ID of the person to delete.
+        """
+        try:
+            await self.client.delete_person(person_id)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error deleting person {person_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def merge_person(self, person_id: str, merge_data: Dict[str, Any]) -> str:
+        """
+        Merge a person.
+
+        Args:
+            person_id: The ID of the person to merge.
+            merge_data: The data for merging the person.
+        """
+        try:
+            result = await self.client.merge_person(person_id, merge_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error merging person {person_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def reassign_faces(
+        self, person_id: str, reassign_data: Dict[str, Any]
+    ) -> str:
+        """
+        Reassign faces to a person.
+
+        Args:
+            person_id: The ID of the person to reassign faces to.
+            reassign_data: The data for reassigning faces.
+        """
+        try:
+            result = await self.client.reassign_faces(person_id, reassign_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error reassigning faces to person {person_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_all_shared_links(self) -> str:
+        """
+        Get all shared links.
+        """
+        try:
+            results = await self.client.get_all_shared_links()
+            return json.dumps(results)
+        except Exception as e:
+            logger.error(f"Error getting all shared links: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def create_shared_link(self, link_data: Dict[str, Any]) -> str:
+        """
+        Create a new shared link.
+
+        Args:
+            link_data: The data for the new shared link.
+        """
+        try:
+            result = await self.client.create_shared_link(link_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error creating shared link: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=1)
+    async def get_my_shared_link(self) -> str:
+        """
+        Get the current user's shared link.
+        """
+        try:
+            result = await self.client.get_my_shared_link()
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting current user's shared link: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @lru_cache(maxsize=128)
+    async def get_shared_link_by_id(self, link_id: str) -> str:
+        """
+        Get a shared link by ID.
+
+        Args:
+            link_id: The ID of the shared link to retrieve.
+        """
+        try:
+            result = await self.client.get_shared_link_by_id(link_id)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error getting shared link {link_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def remove_shared_link(self, link_id: str) -> str:
+        """
+        Remove a shared link.
+
+        Args:
+            link_id: The ID of the shared link to remove.
+        """
+        try:
+            await self.client.remove_shared_link(link_id)
+            return json.dumps({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error removing shared link {link_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def update_shared_link(self, link_id: str, link_data: Dict[str, Any]) -> str:
+        """
+        Update a shared link.
+
+        Args:
+            link_id: The ID of the shared link to update.
+            link_data: The data to update the shared link with.
+        """
+        try:
+            result = await self.client.update_shared_link(link_id, link_data)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error updating shared link {link_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def remove_shared_link_assets(
+        self, link_id: str, asset_ids: List[str]
+    ) -> str:
+        """
+        Remove assets from a shared link.
+
+        Args:
+            link_id: The ID of the shared link.
+            asset_ids: The IDs of the assets to remove.
+        """
+        try:
+            result = await self.client.remove_shared_link_assets(link_id, asset_ids)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error removing assets from shared link {link_id}: {e}")
+            return json.dumps({"error": str(e)})
+
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def add_shared_link_assets(self, link_id: str, asset_ids: List[str]) -> str:
+        """
+        Add assets to a shared link.
+
+        Args:
+            link_id: The ID of the shared link.
+            asset_ids: The IDs of the assets to add.
+        """
+        try:
+            result = await self.client.add_shared_link_assets(link_id, asset_ids)
+            return json.dumps(result)
+        except Exception as e:
+            logger.error(f"Error adding assets to shared link {link_id}: {e}")
+            return json.dumps({"error": str(e)})
