@@ -122,14 +122,23 @@ curl -H "Authorization: Bearer your-secret-auth-token-here" \
 
 ### Starting the Server
 
+Once installed, you can start the server with the following command:
+
 ```bash
-# Start the server
-python -m main
+immich-mcp
+```
 
-# Or using uvicorn directly
-uvicorn main:app --host 0.0.0.0 --port 8626
+This will start the server on `http://0.0.0.0:8626`.
 
-# With auto-reload for development
+You can also run the server in stdio mode:
+
+```bash
+immich-mcp --mode stdio
+```
+
+For development, you can still use `uvicorn` for auto-reloading:
+
+```bash
 uvicorn main:app --host 0.0.0.0 --port 8626 --reload
 ```
 
