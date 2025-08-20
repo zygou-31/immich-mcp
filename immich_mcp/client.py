@@ -58,6 +58,1096 @@ class ImmichClient:
             response.raise_for_status()
             return response.json()
 
+    async def get_all_shared_links(self) -> List[Dict[str, Any]]:
+        """
+        Get all shared links.
+
+        Returns:
+            List[Dict[str, Any]]: A list of shared links.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("shared-links")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_shared_link(self, link_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new shared link.
+
+        Args:
+            link_data: The data for the new shared link.
+
+        Returns:
+            Dict[str, Any]: The created shared link.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("shared-links")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=link_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_my_shared_link(self) -> Dict[str, Any]:
+        """
+        Get the current user's shared link.
+
+        Returns:
+            Dict[str, Any]: The current user's shared link.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("shared-links/me")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_shared_link_by_id(self, link_id: str) -> Dict[str, Any]:
+        """
+        Get a shared link by ID.
+
+        Args:
+            link_id: The ID of the shared link to retrieve.
+
+        Returns:
+            Dict[str, Any]: The shared link.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"shared-links/{link_id}")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def remove_shared_link(self, link_id: str) -> None:
+        """
+        Remove a shared link.
+
+        Args:
+            link_id: The ID of the shared link to remove.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"shared-links/{link_id}")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def update_shared_link(
+        self, link_id: str, link_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update a shared link.
+
+        Args:
+            link_id: The ID of the shared link to update.
+            link_data: The data to update the shared link with.
+
+        Returns:
+            Dict[str, Any]: The updated shared link.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"shared-links/{link_id}")
+            response = await client.patch(
+                url,
+                headers=self.headers,
+                json=link_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def remove_shared_link_assets(
+        self, link_id: str, asset_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Remove assets from a shared link.
+
+        Args:
+            link_id: The ID of the shared link.
+            asset_ids: The IDs of the assets to remove.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"shared-links/{link_id}/assets")
+            response = await client.request(
+                "DELETE",
+                url,
+                headers=self.headers,
+                json={"ids": asset_ids},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def add_shared_link_assets(
+        self, link_id: str, asset_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Add assets to a shared link.
+
+        Args:
+            link_id: The ID of the shared link.
+            asset_ids: The IDs of the assets to add.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"shared-links/{link_id}/assets")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json={"ids": asset_ids},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_person(self, person_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new person.
+
+        Args:
+            person_data: The data for the new person.
+
+        Returns:
+            Dict[str, Any]: The created person.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("people")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=person_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_people(self, people_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Update people.
+
+        Args:
+            people_data: The data for updating people.
+
+        Returns:
+            List[Dict[str, Any]]: The updated people.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("people")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=people_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_people(self, people_data: Dict[str, Any]) -> None:
+        """
+        Delete people.
+
+        Args:
+            people_data: The data for deleting people.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("people")
+            response = await client.request(
+                "DELETE",
+                url,
+                headers=self.headers,
+                json=people_data,
+            )
+            response.raise_for_status()
+
+    async def update_person(
+        self, person_id: str, person_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update a person.
+
+        Args:
+            person_id: The ID of the person to update.
+            person_data: The data to update the person with.
+
+        Returns:
+            Dict[str, Any]: The updated person.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"people/{person_id}")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=person_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_person(self, person_id: str) -> None:
+        """
+        Delete a person.
+
+        Args:
+            person_id: The ID of the person to delete.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"people/{person_id}")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def merge_person(
+        self, person_id: str, merge_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        Merge a person.
+
+        Args:
+            person_id: The ID of the person to merge.
+            merge_data: The data for merging the person.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"people/{person_id}/merge")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=merge_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def reassign_faces(
+        self, person_id: str, reassign_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        Reassign faces to a person.
+
+        Args:
+            person_id: The ID of the person to reassign faces to.
+            reassign_data: The data for reassigning faces.
+
+        Returns:
+            List[Dict[str, Any]]: The updated people.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"people/{person_id}/reassign")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=reassign_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def search_users(self) -> List[Dict[str, Any]]:
+        """
+        Search for users.
+
+        Returns:
+            List[Dict[str, Any]]: A list of users.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def sign_up_admin(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Sign up a new admin user.
+
+        Args:
+            user_data: The data for the new admin user.
+
+        Returns:
+            Dict[str, Any]: The created admin user.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/admin-sign-up")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=user_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def change_password(self, password_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Change the current user's password.
+
+        Args:
+            password_data: The data for changing the password.
+
+        Returns:
+            Dict[str, Any]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/change-password")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=password_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def login(self, login_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Log in a user.
+
+        Args:
+            login_data: The data for logging in.
+
+        Returns:
+            Dict[str, Any]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/login")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=login_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def logout(self) -> Dict[str, Any]:
+        """
+        Log out the current user.
+
+        Returns:
+            Dict[str, Any]: The response from the server.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/logout")
+            response = await client.post(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def reset_pin_code(self, pin_code_data: Dict[str, Any]) -> None:
+        """
+        Reset the current user's pin code.
+
+        Args:
+            pin_code_data: The data for resetting the pin code.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/pin-code")
+            response = await client.request(
+                "DELETE",
+                url,
+                headers=self.headers,
+                json=pin_code_data,
+            )
+            response.raise_for_status()
+
+    async def setup_pin_code(self, pin_code_data: Dict[str, Any]) -> None:
+        """
+        Set up a pin code for the current user.
+
+        Args:
+            pin_code_data: The data for setting up the pin code.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/pin-code")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=pin_code_data,
+            )
+            response.raise_for_status()
+
+    async def change_pin_code(self, pin_code_data: Dict[str, Any]) -> None:
+        """
+        Change the current user's pin code.
+
+        Args:
+            pin_code_data: The data for changing the pin code.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/pin-code")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=pin_code_data,
+            )
+            response.raise_for_status()
+
+    async def lock_auth_session(self) -> None:
+        """
+        Lock the current user's authentication session.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/session/lock")
+            response = await client.post(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def unlock_auth_session(self, unlock_data: Dict[str, Any]) -> None:
+        """
+        Unlock the current user's authentication session.
+
+        Args:
+            unlock_data: The data for unlocking the session.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/session/unlock")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=unlock_data,
+            )
+            response.raise_for_status()
+
+    async def get_auth_status(self) -> Dict[str, Any]:
+        """
+        Get the authentication status of the current user.
+
+        Returns:
+            Dict[str, Any]: The authentication status.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/status")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def validate_access_token(self) -> Dict[str, Any]:
+        """
+        Validate the current access token.
+
+        Returns:
+            Dict[str, Any]: The validation status.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("auth/validateToken")
+            response = await client.post(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_faces(self, asset_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all faces for a given asset.
+
+        Args:
+            asset_id: The ID of the asset.
+
+        Returns:
+            List[Dict[str, Any]]: A list of faces.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("faces")
+            response = await client.get(
+                url,
+                headers=self.headers,
+                params={"assetId": asset_id},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_face(self, face_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new face.
+
+        Args:
+            face_data: The data for the new face.
+
+        Returns:
+            Dict[str, Any]: The created face.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("faces")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=face_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_face(self, face_id: str) -> None:
+        """
+        Delete a face.
+
+        Args:
+            face_id: The ID of the face to delete.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"faces/{face_id}")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def reassign_faces_by_id(
+        self, face_id: str, person_id: str
+    ) -> Dict[str, Any]:
+        """
+        Reassign a face to a person.
+
+        Args:
+            face_id: The ID of the face to reassign.
+            person_id: The ID of the person to reassign the face to.
+
+        Returns:
+            Dict[str, Any]: The updated person.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"faces/{face_id}")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json={"personId": person_id},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_my_user(self) -> Dict[str, Any]:
+        """
+        Get the current user's information.
+
+        Returns:
+            Dict[str, Any]: The current user's information.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_my_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Update the current user's information.
+
+        Args:
+            user_data: The data to update the user with.
+
+        Returns:
+            Dict[str, Any]: The updated user information.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=user_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_user(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get a user's information.
+
+        Args:
+            user_id: The ID of the user to retrieve.
+
+        Returns:
+            Dict[str, Any]: The user's information.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"users/{user_id}")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_user_license(self) -> None:
+        """Delete the current user's license."""
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/license")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def get_user_license(self) -> Dict[str, Any]:
+        """Get the current user's license."""
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/license")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def set_user_license(self, license_key: str) -> Dict[str, Any]:
+        """
+        Set the current user's license.
+
+        Args:
+            license_key: The license key to set.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/license")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json={"licenseKey": license_key},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_user_onboarding(self) -> None:
+        """Delete the current user's onboarding status."""
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/onboarding")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def get_user_onboarding(self) -> Dict[str, Any]:
+        """Get the current user's onboarding status."""
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/onboarding")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def set_user_onboarding(
+        self, onboarding_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Set the current user's onboarding status.
+
+        Args:
+            onboarding_data: The onboarding data to set.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/onboarding")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=onboarding_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_my_preferences(self) -> Dict[str, Any]:
+        """Get the current user's preferences."""
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/preferences")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_my_preferences(
+        self, preferences_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update the current user's preferences.
+
+        Args:
+            preferences_data: The preferences to update.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/me/preferences")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=preferences_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_profile_image(self) -> None:
+        """Delete the current user's profile image."""
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/profile-image")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def create_profile_image(self, file_path: str) -> Dict[str, Any]:
+        """
+        Create a profile image for the current user.
+
+        Args:
+            file_path: The path to the image file.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("users/profile-image")
+            with open(file_path, "rb") as f:
+                response = await client.post(
+                    url,
+                    headers=self.headers,
+                    files={"file": f},
+                )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_profile_image(self, user_id: str) -> bytes:
+        """
+        Get a user's profile image.
+
+        Args:
+            user_id: The ID of the user.
+
+        Returns:
+            The profile image as bytes.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"users/{user_id}/profile-image")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.content
+
+    async def get_api_keys(self) -> List[Dict[str, Any]]:
+        """
+        Get all API keys.
+
+        Returns:
+            List[Dict[str, Any]]: A list of API keys.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("api-keys")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_api_key(self, key_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new API key.
+
+        Args:
+            key_data: The data for the new API key.
+
+        Returns:
+            Dict[str, Any]: The created API key.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("api-keys")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=key_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_api_key(self, key_id: str) -> Dict[str, Any]:
+        """
+        Get an API key.
+
+        Args:
+            key_id: The ID of the API key to retrieve.
+
+        Returns:
+            Dict[str, Any]: The API key.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"api-keys/{key_id}")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_api_key(
+        self, key_id: str, key_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update an API key.
+
+        Args:
+            key_id: The ID of the API key to update.
+            key_data: The data to update the API key with.
+
+        Returns:
+            Dict[str, Any]: The updated API key.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"api-keys/{key_id}")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=key_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_api_key(self, key_id: str) -> None:
+        """
+        Delete an API key.
+
+        Args:
+            key_id: The ID of the API key to delete.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"api-keys/{key_id}")
+            response = await client.delete(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+
+    async def search_users_admin(
+        self, user_id: Optional[str] = None, with_deleted: Optional[bool] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for users with admin privileges.
+
+        Args:
+            user_id: The ID of the user to search for.
+            with_deleted: Whether to include deleted users in the results.
+
+        Returns:
+            List[Dict[str, Any]]: A list of users matching the search criteria.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if user_id is not None:
+                params["id"] = user_id
+            if with_deleted is not None:
+                params["withDeleted"] = with_deleted
+            url = self._get_url("admin/users")
+            response = await client.get(
+                url,
+                headers=self.headers,
+                params=params,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def create_user_admin(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new user with admin privileges.
+
+        Args:
+            user_data: The data for the new user.
+
+        Returns:
+            Dict[str, Any]: The created user.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url("admin/users")
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=user_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_user_admin(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific user with admin privileges.
+
+        Args:
+            user_id: The unique identifier of the user to retrieve.
+
+        Returns:
+            Dict[str, Any]: User object containing comprehensive information.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"admin/users/{user_id}")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_user_admin(
+        self, user_id: str, user_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update a user with admin privileges.
+
+        Args:
+            user_id: The ID of the user to update.
+            user_data: The data to update the user with.
+
+        Returns:
+            Dict[str, Any]: The updated user.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"admin/users/{user_id}")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=user_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def delete_user_admin(
+        self, user_id: str, force: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Delete a user with admin privileges.
+
+        Args:
+            user_id: The ID of the user to delete.
+            force: Whether to force the deletion.
+
+        Returns:
+            Dict[str, Any]: The deleted user.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"admin/users/{user_id}")
+            response = await client.request(
+                "DELETE",
+                url,
+                headers=self.headers,
+                json={"force": force},
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_user_preferences_admin(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get preferences for a specific user with admin privileges.
+
+        Args:
+            user_id: The unique identifier of the user.
+
+        Returns:
+            Dict[str, Any]: The user's preferences.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"admin/users/{user_id}/preferences")
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def update_user_preferences_admin(
+        self, user_id: str, preferences_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update preferences for a specific user with admin privileges.
+
+        Args:
+            user_id: The ID of the user.
+            preferences_data: The data to update the preferences with.
+
+        Returns:
+            Dict[str, Any]: The updated preferences.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"admin/users/{user_id}/preferences")
+            response = await client.put(
+                url,
+                headers=self.headers,
+                json=preferences_data,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def restore_user_admin(self, user_id: str) -> Dict[str, Any]:
+        """
+        Restore a deleted user with admin privileges.
+
+        Args:
+            user_id: The ID of the user to restore.
+
+        Returns:
+            Dict[str, Any]: The restored user.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            url = self._get_url(f"admin/users/{user_id}/restore")
+            response = await client.post(
+                url,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_user_statistics_admin(
+        self,
+        user_id: str,
+        is_favorite: Optional[bool] = None,
+        is_trashed: Optional[bool] = None,
+        visibility: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get statistics for a specific user with admin privileges.
+
+        Args:
+            user_id: The unique identifier of the user.
+            is_favorite: Whether to filter by favorite status.
+            is_trashed: Whether to filter by trashed status.
+            visibility: The visibility of the assets.
+
+        Returns:
+            Dict[str, Any]: The user's statistics.
+        """
+        async with httpx.AsyncClient(timeout=10) as client:
+            params = {}
+            if is_favorite is not None:
+                params["isFavorite"] = is_favorite
+            if is_trashed is not None:
+                params["isTrashed"] = is_trashed
+            if visibility is not None:
+                params["visibility"] = visibility
+            url = self._get_url(f"admin/users/{user_id}/statistics")
+            response = await client.get(
+                url,
+                headers=self.headers,
+                params=params,
+            )
+            response.raise_for_status()
+            return response.json()
+
     async def search_memories(
         self,
         for_date: Optional[str] = None,
