@@ -197,32 +197,42 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
-if __name__ == "__main__":
+
+def main():
+    """
+    Main entry point for the Immich MCP server.
+    This function parses command-line arguments and starts the server
+    in the specified mode (HTTP or stdio).
+    """
     import argparse
     import asyncio
     import uvicorn
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Immich MCP server for AI agent integration."
+    )
     parser.add_argument(
         "--mode",
         default=os.environ.get("MCP_MODE", "http"),
-        help="Mode to run: http or stdio",
+        help="Mode to run: http or stdio. Defaults to 'http'.",
     )
     args = parser.parse_args()
 
-    mode = args.mode or os.environ.get("MCP_MODE", "http")
+    mode = args.mode
 
-    if mode == "stdio" or os.environ.get("MCP_MODE") == "stdio":
-        # Run the stdio server entrypoint from immich_mcp.stdio_bridge
+    if mode == "stdio":
+        logger.info("Starting stdio server mode")
         try:
             from immich_mcp.stdio_bridge import main as stdio_main
 
-            logger.info("Starting stdio server mode")
             asyncio.run(stdio_main())
-        except Exception as e:
-            logger.error(f"Failed to start stdio server: {e}")
+        except ImportError:
+            logger.error("Failed to import stdio_bridge. Make sure it is available.")
             raise
-    else:
+        except Exception as e:
+            logger.error(f"An error occurred in stdio mode: {e}")
+            raise
+    elif mode == "http":
         disable_uvicorn = (
             "DISABLE_UVICORN" in os.environ
             and os.environ.get("DISABLE_UVICORN") == "true"
@@ -231,4 +241,11 @@ if __name__ == "__main__":
         if disable_uvicorn:
             logger.info("Skipping uvicorn.run due to DISABLE_UVICORN=true")
         else:
+            logger.info("Starting HTTP server mode")
             uvicorn.run(app, host="0.0.0.0", port=8626)
+    else:
+        logger.error(f"Invalid mode specified: {mode}. Choose 'http' or 'stdio'.")
+
+
+if __name__ == "__main__":
+    main()
