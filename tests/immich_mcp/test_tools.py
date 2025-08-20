@@ -570,6 +570,43 @@ async def test_merge_person(immich_config: ImmichConfig):
 
 
 @pytest.mark.asyncio
+async def test_discover_tools(immich_config: ImmichConfig):
+    tools = ImmichTools(immich_config)
+
+    # Test a query that should match multiple categories
+    query = "search photo people"
+    result = await tools.discover_tools(query)
+    import json
+
+    data = json.loads(result)
+
+    # Check that we have some relevant tools
+    assert "relevant_tools" in data
+    assert len(data["relevant_tools"]) > 0
+
+    # Check for specific tools
+    tool_names = [tool["name"] for tool in data["relevant_tools"]]
+    assert "search_smart" in tool_names
+    assert "search_people" in tool_names
+    assert "get_asset_info" in tool_names
+
+    # Test a query that should match only one category
+    query = "manage album"
+    result = await tools.discover_tools(query)
+    data = json.loads(result)
+    tool_names = [tool["name"] for tool in data["relevant_tools"]]
+    assert "create_album" in tool_names
+    assert "delete_album" in tool_names
+    assert "search_smart" not in tool_names
+
+    # Test a query that should not match any tools
+    query = "what is the weather like"
+    result = await tools.discover_tools(query)
+    data = json.loads(result)
+    assert len(data["relevant_tools"]) == 0
+
+
+@pytest.mark.asyncio
 async def test_reassign_faces(immich_config: ImmichConfig):
     person_id = "1"
     async with respx.mock(base_url=str(immich_config.immich_base_url)) as mock:
