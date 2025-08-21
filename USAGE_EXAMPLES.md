@@ -161,6 +161,36 @@ Claude: I'll search for your recent photos using the Immich MCP server.
 [Uses search_photos tool with query "recent"]
 ```
 
+### Tool Discovery
+
+The `discover_tools` tool helps you find relevant tools for your task by providing a natural language query.
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def discover_tools_example():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Discover tools related to searching for photos of people
+        query = "search photo people"
+        discovered_tools_json = await tools.discover_tools(query)
+        discovered_tools = json.loads(discovered_tools_json)
+
+        print(f"Found {len(discovered_tools['relevant_tools'])} relevant tools for '{query}':")
+        for tool in discovered_tools['relevant_tools']:
+            print(f"- {tool['name']}: {tool['description']}")
+
+asyncio.run(discover_tools_example())
+```
+
 Notes:
 - Stdio mode: Use `--mode stdio` and set `DISABLE_CONSOLE_OUTPUT=true` to suppress non-JSON stdout.
 - HTTP mode: Use `--mode http` (default) and call the exposed HTTP endpoints (e.g., /mcp) over the network with a Bearer token.

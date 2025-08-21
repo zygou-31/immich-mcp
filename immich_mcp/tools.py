@@ -7,6 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from .cache import CacheManager
 from .rate_limiter import RateLimiter
+from .tool_definitions import TOOL_DESCRIPTIONS
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,36 @@ class ImmichTools:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         await self.client.__aexit__(exc_type, exc_val, exc_tb)
+
+    async def discover_tools(self, query: str) -> str:
+        """
+        Discovers relevant tools based on a natural language query.
+
+        Args:
+            query: A natural language query describing the desired functionality.
+
+        Returns:
+            A JSON string containing a list of recommended tools, including their names and descriptions.
+        """
+        query_words = set(query.lower().split())
+        relevant_tools = {}
+
+        for category, definition in TOOL_DESCRIPTIONS.items():
+            if any(keyword in query_words for keyword in definition["keywords"]):
+                for tool_name in definition["tools"]:
+                    if hasattr(self, tool_name) and tool_name not in relevant_tools:
+                        tool_method = getattr(self, tool_name)
+                        relevant_tools[tool_name] = tool_method.__doc__.strip()
+
+        return json.dumps(
+            {
+                "relevant_tools": [
+                    {"name": name, "description": desc}
+                    for name, desc in relevant_tools.items()
+                ]
+            },
+            indent=2,
+        )
 
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)

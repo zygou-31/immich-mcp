@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
         # Create and mount the tool server
         tool_server = ToolServer(
             name="immich-mcp-server",
-            instructions="MCP server for Immich API with a comprehensive set of tools.",
+            instructions="MCP server for Immich API. To get started, you can use the 'discover_tools' tool with a query to find relevant tools for your task. For example: discover_tools(query='search for photos').",
             tools=tools,
         )
 
