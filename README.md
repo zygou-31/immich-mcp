@@ -217,6 +217,14 @@ For a more streamlined experience, you can use Docker Compose.
 
 ### Available Tools
 
+#### `discover_tools(query: str)`
+Discovers relevant tools based on a natural language query.
+
+**Parameters:**
+- `query` (str): A natural language query describing the desired functionality.
+
+**Returns:** A JSON string containing a list of recommended tools, including their names and descriptions.
+
 #### `get_asset_info(asset_id: str, key: Optional[str] = None, slug: Optional[str] = None)`
 Gets detailed information about a specific asset.
 

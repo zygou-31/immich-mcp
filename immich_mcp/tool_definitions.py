@@ -94,7 +94,13 @@ TOOL_DESCRIPTIONS = {
         ],
     },
     "auth": {
-        "keywords": ["authentication", "authorization", "security", "login", "password"],
+        "keywords": [
+            "authentication",
+            "authorization",
+            "security",
+            "login",
+            "password",
+        ],
         "tools": [
             "get_api_keys",
             "create_api_key",
