@@ -23,7 +23,7 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 
 [project.scripts]
-immich-mcp = "main:main"
+immich-mcp = "immich_mcp.cli:main"
 
 [project.optional-dependencies]
 dev = [

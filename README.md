@@ -136,10 +136,10 @@ You can also run the server in stdio mode:
 immich-mcp --mode stdio
 ```
 
-For development, you can still use `uvicorn` for auto-reloading:
+For development, you can use `uvicorn` for auto-reloading:
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8626 --reload
+uvicorn immich_mcp.cli:app --host 0.0.0.0 --port 8626 --reload
 ```
 
 ### Docker
@@ -422,7 +422,8 @@ immich-mcp/
 │       ├── test_client.py
 │       ├── test_config.py
 │       └── test_tools.py
-├── main.py               # Entry point
+├── immich_mcp/
+│   ├── cli.py             # Command-line interface
 ├── pyproject.toml        # Project configuration
 ├── README.md            # This file
 └── .env.example         # Environment template
