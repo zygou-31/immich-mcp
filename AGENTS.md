@@ -40,7 +40,7 @@ cp .env.example .env
 
 The following environment variables are **required**:
 
--   `IMMICH_BASE_URL`: The base URL of your Immich server's API (e.g., `https://your-immich-server.com/api`).
+-   `IMMICH_BASE_URL`: The base URL of your Immich server (e.g., `https://your-immich-server.com`). It should not end with `/api`.
 -   `IMMICH_API_KEY`: Your Immich API key.
 -   `AUTH_TOKEN`: A secret bearer token used to authenticate with the MCP server.
 
@@ -96,3 +96,23 @@ ruff check . --fix && ruff format .
 ```
 
 This ensures that all code contributed to the project maintains a consistent style.
+
+## Agent Interaction and Testing Notes
+
+This section contains helpful information based on past interactions to guide future agents.
+
+### Real-World Testing
+
+The test suite in this repository uses mocked data. For tasks that require testing against a real Immich instance (e.g., verifying a bug fix or a new feature), please follow these steps:
+
+1.  **Request Credentials:** Do not assume you have access to credentials. You must ask the user to provide a temporary `IMMICH_BASE_URL`, `IMMICH_API_KEY`, and `AUTH_TOKEN` for testing.
+2.  **Security Context:** Be aware that you are operating in a secure, isolated sandbox. You **cannot** access repository secrets (like GitHub Secrets) or any other environment variables from an external CI/CD system. All necessary information must be provided directly by the user during the session.
+
+### Key Configuration Points
+
+-   **`IMMICH_BASE_URL` Format:** The `IMMICH_BASE_URL` must point to the root of the Immich instance (e.g., `https://immich.example.com`). It should **not** include the `/api` suffix.
+-   **Environment Variables:** Configuration is loaded from a `.env` file and then overridden by environment variables. The variable names should match the fields in the `ImmichConfig` class (e.g., `IMMICH_BASE_URL`, `AUTH_TOKEN`).
+
+### Server Startup Behavior
+
+-   **Graceful Exit on Error:** The server is designed to exit immediately if it encounters a configuration error or fails the initial connection test. This is expected behavior. If the server doesn't start, check the logs for error messages to diagnose the problem.

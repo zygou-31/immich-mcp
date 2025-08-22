@@ -20,7 +20,7 @@ class ImmichConfig(BaseSettings):
 
     immich_base_url: HttpUrl = Field(
         ...,
-        description="Base URL of the Immich API server (must end with /api)",
+        description="Base URL of the Immich API server",
     )
     immich_api_key: Optional[str] = Field(
         default=None,
@@ -131,7 +131,6 @@ class ImmichConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=".env",
-        env_prefix="IMMICH_",
         extra="ignore",
         json_schema_extra={
             "env": {
