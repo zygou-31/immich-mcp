@@ -2,12 +2,12 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock, AsyncMock
 
-from main import create_app
+from immich_mcp.cli import create_app
 
 
 @pytest.fixture
 def client():
-    with patch("main.load_config") as mock_load_config:
+    with patch("immich_mcp.cli.load_config") as mock_load_config:
         mock_config = MagicMock()
         mock_config.auth_token = "test_token"
         mock_config.test_connection = AsyncMock(return_value=True)
@@ -33,7 +33,7 @@ def client():
             yield
 
         # Patch the lifespan in the create_app function
-        with patch("main.lifespan", mock_lifespan):
+        with patch("immich_mcp.cli.lifespan", mock_lifespan):
             app = create_app()
             with TestClient(app) as client:
                 yield client
