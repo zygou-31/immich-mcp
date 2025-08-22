@@ -161,6 +161,36 @@ Claude: I'll search for your recent photos using the Immich MCP server.
 [Uses search_photos tool with query "recent"]
 ```
 
+### Tool Discovery
+
+The `discover_tools` tool helps you find relevant tools for your task by providing a natural language query.
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def discover_tools_example():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Discover tools related to searching for photos of people
+        query = "search photo people"
+        discovered_tools_json = await tools.discover_tools(query)
+        discovered_tools = json.loads(discovered_tools_json)
+
+        print(f"Found {len(discovered_tools['relevant_tools'])} relevant tools for '{query}':")
+        for tool in discovered_tools['relevant_tools']:
+            print(f"- {tool['name']}: {tool['description']}")
+
+asyncio.run(discover_tools_example())
+```
+
 Notes:
 - Stdio mode: Use `--mode stdio` and set `DISABLE_CONSOLE_OUTPUT=true` to suppress non-JSON stdout.
 - HTTP mode: Use `--mode http` (default) and call the exposed HTTP endpoints (e.g., /mcp) over the network with a Bearer token.
@@ -390,6 +420,177 @@ async def job_handling():
             print(f"Run asset job result: {run_job_result}")
 
 asyncio.run(job_handling())
+```
+
+### Users (admin) Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def admin_users_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Search for users
+        users = json.loads(await tools.search_users_admin())
+        print(f"Found {len(users)} users")
+
+        # Create a user
+        new_user = json.loads(
+            await tools.create_user_admin({"name": "test", "email": "test@test.com", "password": "password"})
+        )
+        print(f"Created user: {new_user['name']}")
+
+asyncio.run(admin_users_management())
+```
+
+### Users Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def users_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Get my user
+        me = json.loads(await tools.get_my_user())
+        print(f"My user: {me['name']}")
+
+        # Update my user
+        updated_me = json.loads(
+            await tools.update_my_user({"name": "new name"})
+        )
+        print(f"Updated me: {updated_me['name']}")
+
+asyncio.run(users_management())
+```
+
+### API Keys Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def api_keys_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Get all api keys
+        keys = json.loads(await tools.get_api_keys())
+        print(f"Found {len(keys)} keys")
+
+        # Create a key
+        new_key = json.loads(
+            await tools.create_api_key({"name": "test"})
+        )
+        print(f"Created key: {new_key['name']}")
+
+asyncio.run(api_keys_management())
+```
+
+### Authentication Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def auth_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Login
+        login_result = json.loads(
+            await tools.login({"email": "test@test.com", "password": "password"})
+        )
+        print(f"Login result: {login_result}")
+
+        # Logout
+        logout_result = json.loads(await tools.logout())
+        print(f"Logout result: {logout_result}")
+
+asyncio.run(auth_management())
+```
+
+### Faces Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def faces_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Get faces
+        assets = json.loads(await tools.get_all_assets())
+        if assets:
+            asset_id = assets[0]["id"]
+            faces = json.loads(await tools.get_faces(asset_id))
+            print(f"Found {len(faces)} faces in asset {asset_id}")
+
+asyncio.run(faces_management())
+```
+
+### Shared Links Management
+
+```python
+import asyncio
+import json
+from immich_mcp.tools import ImmichTools
+from immich_mcp.config import ImmichConfig
+
+async def shared_links_management():
+    config = ImmichConfig(
+        immich_base_url="https://your-immich-server.com/api",
+        immich_api_key="your-immich-api-key",
+        auth_token="your-secret-auth-token"
+    )
+
+    async with ImmichTools(config) as tools:
+        # Get all shared links
+        links = json.loads(await tools.get_all_shared_links())
+        print(f"Found {len(links)} shared links")
+
+        # Create a shared link
+        new_link = json.loads(
+            await tools.create_shared_link({"type": "ALBUM"})
+        )
+        print(f"Created link: {new_link['id']}")
+
+asyncio.run(shared_links_management())
 ```
 
 ## Error Handling

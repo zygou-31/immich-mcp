@@ -3,14 +3,15 @@ from mcp.server.fastmcp.tools.base import Tool
 from fastapi import FastAPI, Depends, HTTPException, status, Request, APIRouter
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
-import httpx
 import logging
 import contextlib
 import os
 from contextlib import asynccontextmanager
+import inspect
 
 from immich_mcp.client import ImmichClient
 from immich_mcp.config import ImmichConfig, load_config
+from immich_mcp.tools import ImmichTools
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -41,21 +42,22 @@ async def lifespan(app: FastAPI):
         app.state.immich_client = immich_client
 
         # Create and attach the tools
-        immich_tools = ImmichTools(immich_client)
+        immich_tools = ImmichTools(config)
         app.state.immich_tools = immich_tools
+
+        # Dynamically create tools from ImmichTools methods
+        tools = []
+        for name, method in inspect.getmembers(
+            immich_tools, predicate=inspect.ismethod
+        ):
+            if not name.startswith("_"):
+                tools.append(Tool.from_function(method))
 
         # Create and mount the tool server
         tool_server = ToolServer(
             name="immich-mcp-server",
-            instructions="MCP server for Immich API with tools for pinging, albums, assets, search, and uploads.",
-            tools=[
-                Tool.from_function(immich_tools.ping_server),
-                Tool.from_function(immich_tools.get_all_albums),
-                Tool.from_function(immich_tools.get_asset_info),
-                Tool.from_function(immich_tools.search_photos),
-                Tool.from_function(immich_tools.upload_photo),
-                Tool.from_function(immich_tools.create_album),
-            ],
+            instructions="MCP server for Immich API. To get started, you can use the 'discover_tools' tool with a query to find relevant tools for your task. For example: discover_tools(query='search for photos').",
+            tools=tools,
         )
 
         # Optionally disable mounting the streamable HTTP app (useful for stdio-only tests)
@@ -102,81 +104,6 @@ def verify_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return credentials
-
-
-class ImmichTools:
-    def __init__(self, client: ImmichClient):
-        self.client = client
-
-    async def ping_server(self) -> str:
-        """Pings the Immich server to check for a connection."""
-        try:
-            response = await self.client.ping()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            return f"Error pinging server: {e.response.status_code} - {e.response.text}"
-        except httpx.RequestError as e:
-            return f"Network error pinging server: {e}"
-
-    async def get_all_albums(self) -> str:
-        """Retrieves all albums from Immich."""
-        try:
-            response = await self.client.list_albums()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            return f"Error getting albums: {e.response.status_code} - {e.response.text}"
-        except httpx.RequestError as e:
-            return f"Network error getting albums: {e}"
-
-    async def get_asset_info(self, asset_id: str) -> str:
-        """Retrieves information about a specific asset."""
-        try:
-            response = await self.client.get_asset_details(asset_id)
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            return f"Error getting asset info: {e.response.status_code} - {e.response.text}"
-        except httpx.RequestError as e:
-            return f"Network error getting asset info: {e}"
-
-    async def search_photos(
-        self, query: str, limit: int = 20, album_id: str = None
-    ) -> str:
-        """Searches for photos in Immich."""
-        try:
-            response = await self.client.search_smart(query, limit, album_id)
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            return (
-                f"Error searching photos: {e.response.status_code} - {e.response.text}"
-            )
-        except httpx.RequestError as e:
-            return f"Network error searching photos: {e}"
-
-    async def upload_photo(self, file_path: str, album_id: str = None) -> str:
-        """Uploads a photo to Immich."""
-        try:
-            response = await self.client.upload_asset(file_path, album_id)
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            return (
-                f"Error uploading photo: {e.response.status_code} - {e.response.text}"
-            )
-        except httpx.RequestError as e:
-            return f"Network error uploading photo: {e}"
-        except FileNotFoundError as e:
-            return str(e)
-
-    async def create_album(
-        self, album_name: str, description: str = "", assets: list = []
-    ) -> str:
-        """Creates a new album in Immich."""
-        try:
-            response = await self.client.create_album(album_name, description, assets)
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            return f"Error creating album: {e.response.status_code} - {e.response.text}"
-        except httpx.RequestError as e:
-            return f"Network error creating album: {e}"
 
 
 def create_app() -> FastAPI:
