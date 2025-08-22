@@ -72,7 +72,7 @@ Create a `.env` file in your project root:
 
 ```bash
 # Required
-IMMICH_BASE_URL=https://your-immich-server.com/api
+IMMICH_BASE_URL=https://your-immich-server.com
 IMMICH_API_KEY=your-immich-api-key-here
 AUTH_TOKEN=your-secret-auth-token-here
 
@@ -167,7 +167,7 @@ You can run the container using `docker run`. You'll need to provide the require
 docker run -d \
   --name immich-mcp-container \
   -p 8626:8626 \
-  -e IMMICH_BASE_URL="https://your-immich-server.com/api" \
+  -e IMMICH_BASE_URL="https://your-immich-server.com" \
   -e IMMICH_API_KEY="your-immich-api-key" \
   -e AUTH_TOKEN="your-secret-auth-token" \
   -e MCP_PORT="8626" \
@@ -192,7 +192,7 @@ For a more streamlined experience, you can use Docker Compose.
     Your `.env` file should look like this:
 
     ```
-    IMMICH_BASE_URL=https://your-immich-server.com/api
+    IMMICH_BASE_URL=https://your-immich-server.com
     IMMICH_API_KEY=your-api-key-here
     AUTH_TOKEN=your-secret-auth-token-here
     ```
@@ -1041,7 +1041,7 @@ docker build -t immich-mcp:latest .
 docker run -d \
   --name immich-mcp \
   -p 8626:8626 \
-  -e IMMICH_BASE_URL=https://your-immich-server.com/api \
+  -e IMMICH_BASE_URL=https://your-immich-server.com \
   -e IMMICH_API_KEY=your-api-key \
   -e MCP_PORT="8626" \
   --restart unless-stopped \
@@ -1061,7 +1061,7 @@ After=network.target
 Type=exec
 User=immich-mcp
 WorkingDirectory=/opt/immich-mcp
-Environment=IMMICH_BASE_URL=https://your-immich-server.com/api
+Environment=IMMICH_BASE_URL=https://your-immich-server.com
 Environment=IMMICH_API_KEY=your-api-key
 ExecStart=/opt/immich-mcp/venv/bin/python -m immich_mcp.server
 Restart=always
@@ -1093,7 +1093,7 @@ Here's an example of how to use it with Caddy as a reverse proxy in a `docker-co
     Add `MCP_BASE_URL` to your `.env` file:
 
     ```
-    IMMICH_BASE_URL=https://your-immich-server.com/api
+    IMMICH_BASE_URL=https://your-immich-server.com
     IMMICH_API_KEY=your-api-key-here
     MCP_PORT=8626
     MCP_BASE_URL=/mcp
@@ -1161,7 +1161,7 @@ With this setup, the Immich MCP server will be available at `https://your-domain
 #### Development
 ```bash
 # .env.development
-IMMICH_BASE_URL=http://localhost:2283/api
+IMMICH_BASE_URL=http://localhost:2283
 IMMICH_API_KEY=dev-key
 IMMICH_TIMEOUT=60
 ```
@@ -1169,7 +1169,7 @@ IMMICH_TIMEOUT=60
 #### Production
 ```bash
 # .env.production
-IMMICH_BASE_URL=https://immich.yourdomain.com/api
+IMMICH_BASE_URL=https://immich.yourdomain.com
 IMMICH_API_KEY=production-key
 IMMICH_TIMEOUT=30
 ```
@@ -1206,13 +1206,13 @@ To allow the workflow to publish to your Docker Hub repository, you need to conf
 
 **Problem**: `Connection test failed`
 **Solution**:
-1. Verify your `IMMICH_BASE_URL` ends with `/api`
-2. Check that your Immich server is accessible
-3. Ensure your API key is valid and has proper permissions
+1. Verify your `IMMICH_BASE_URL` points to the root of your Immich instance (e.g., `https://your-immich-server.com`) and does not end with `/api`.
+2. Check that your Immich server is accessible.
+3. Ensure your API key is valid and has proper permissions.
 
 ```bash
 # Test connectivity
-curl -H "x-api-key: your-api-key" https://your-immich-server.com/api/server-info/ping
+curl -H "x-api-key: your-api-key" https://your-immich-server.com/server-info/ping
 ```
 
 #### Authentication Errors

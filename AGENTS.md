@@ -40,7 +40,7 @@ cp .env.example .env
 
 The following environment variables are **required**:
 
--   `IMMICH_BASE_URL`: The base URL of your Immich server's API (e.g., `https://your-immich-server.com/api`).
+-   `IMMICH_BASE_URL`: The base URL of your Immich server (e.g., `https://your-immich-server.com`). It should not end with `/api`.
 -   `IMMICH_API_KEY`: Your Immich API key.
 -   `AUTH_TOKEN`: A secret bearer token used to authenticate with the MCP server.
 
