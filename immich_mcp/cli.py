@@ -169,7 +169,7 @@ def main():
             logger.info("Skipping uvicorn.run due to DISABLE_UVICORN=true")
         else:
             logger.info("Starting HTTP server mode")
-            uvicorn.run(app, host="0.0.0.0", port=8626)
+            uvicorn.run(app, host="0.0.0.0", port=8626, timeout_graceful_shutdown=5)
     else:
         logger.error(f"Invalid mode specified: {mode}. Choose 'http' or 'stdio'.")
 
