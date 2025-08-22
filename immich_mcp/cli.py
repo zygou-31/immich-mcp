@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import logging
 import contextlib
 import os
+import sys
 from contextlib import asynccontextmanager
 import inspect
 
@@ -79,7 +80,8 @@ async def lifespan(app: FastAPI):
             yield
     except Exception as e:
         logger.error(f"Startup error: {e}")
-        raise
+        logger.error("Application will now exit.")
+        sys.exit(1)
 
 
 # Security scheme
