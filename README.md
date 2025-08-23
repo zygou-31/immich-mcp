@@ -16,7 +16,45 @@ A production-ready Model Context Protocol (MCP) server for the Immich photo mana
 - **Performance Optimized**: Caching and rate limiting for optimal performance
 - **Type Safety**: Full type hints and Pydantic validation
 
+## 🚀 Getting Started
+
+### 1. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/immich-mcp.git
+cd immich-mcp
+
+# Install dependencies
+pip install -e .
+```
+For more details, see the [full installation guide](INSTALL.md).
+
+### 2. Configuration
+
+Create a `.env` file in the project root with your Immich server details:
+
+```bash
+# .env
+IMMICH_BASE_URL=https://your-immich-server.com
+IMMICH_API_KEY=your-immich-api-key-here
+AUTH_TOKEN=your-secret-auth-token-here
+```
+For more details, see the [full configuration guide](CONFIGURATION.md).
+
+### 3. Usage
+
+Start the server with the following command:
+
+```bash
+immich-mcp
+```
+
+The server will start on `http://0.0.0.0:8626`. For more details, see the [full usage guide](USAGE.md).
+
 ## 📚 Documentation
+
+For more detailed information, please see the full documentation:
 
 - [Installation](INSTALL.md)
 - [Configuration](CONFIGURATION.md)
