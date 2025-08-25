@@ -60,6 +60,15 @@ async def main():
         else:
             raise Exception("mcp-immich server did not become healthy in time.")
 
+    # DEBUG: Fetch and print OpenAPI spec
+    print("Fetching OpenAPI spec...")
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{MCP_URL}/openapi.json")
+        response.raise_for_status()
+        print("--- OpenAPI Spec ---")
+        print(response.text)
+        print("--------------------")
+
     # 3. Upload images
     async with httpx.AsyncClient(timeout=30) as session:
         image_paths = list(PICTURES_DIR.glob("*.jpg"))
