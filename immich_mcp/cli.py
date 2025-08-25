@@ -68,7 +68,8 @@ async def lifespan(app: FastAPI):
         )
 
         if not disable_streamable:
-            app.mount("/mcp", tool_server.streamable_http_app())
+            tool_app = tool_server.streamable_http_app()
+            app.include_router(tool_app.router, prefix="/mcp")
 
         # Only start the tool server's session manager if the streamable app is enabled
         if not disable_streamable:
