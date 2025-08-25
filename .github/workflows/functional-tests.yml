@@ -26,6 +26,12 @@ jobs:
           sudo sysctl -w fs.inotify.max_user_instances=512
           docker compose up -d
 
+      - name: Display Immich logs
+        if: always()
+        run: |
+          cd ./immich-app
+          docker compose logs
+
       - name: Wait for Immich to be healthy
         run: |
           echo "Waiting for Immich to start..."

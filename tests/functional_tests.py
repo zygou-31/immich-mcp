@@ -5,6 +5,7 @@ import subprocess
 import time
 import uuid
 from pathlib import Path
+from datetime import datetime
 
 IMMICH_URL = os.environ.get("IMMICH_URL", "http://localhost:2283")
 API_KEY = os.environ["IMMICH_API_KEY"]
@@ -131,6 +132,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    from datetime import datetime
     import asyncio
     asyncio.run(main())
