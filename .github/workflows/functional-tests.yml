@@ -16,6 +16,7 @@ jobs:
 
       - name: Set up Immich
         run: |
+          rm -rf ./immich-app
           mkdir ./immich-app
           cd ./immich-app
           wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
