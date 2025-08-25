@@ -96,13 +96,21 @@ async def main():
             response = await client.get(f"{IMMICH_URL}/api/jobs", headers=headers)
             response.raise_for_status()
             jobs_status = response.json()
-            pending_jobs = (
-                jobs_status["thumbnailGeneration"]["pending"]
-                + jobs_status["metadataExtraction"]["pending"]
-                + jobs_status["faceDetection"]["pending"]
-                + jobs_status["facialRecognition"]["pending"]
-                + jobs_status["smartSearch"]["pending"]
-            )
+            job_queues = [
+                "thumbnailGeneration",
+                "metadataExtraction",
+                "faceDetection",
+                "facialRecognition",
+                "smartSearch",
+            ]
+            pending_jobs = 0
+            for queue_name in job_queues:
+                if queue_name in jobs_status:
+                    job_counts = jobs_status[queue_name].get("jobCounts", {})
+                    pending_jobs += job_counts.get("active", 0) + job_counts.get(
+                        "waiting", 0
+                    )
+
             if pending_jobs == 0:
                 print("All jobs completed.")
                 break
