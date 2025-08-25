@@ -34,7 +34,7 @@ async def upload_asset(session, image_path: Path):
         }
         print(f"Uploading {image_path.name}...")
         response = await session.post(
-            f"{IMMICH_URL}/api/asset/upload", headers=headers, files=files
+            f"{IMMICH_URL}/api/assets", headers=headers, files=files
         )
         response.raise_for_status()
         return response.json()["id"]

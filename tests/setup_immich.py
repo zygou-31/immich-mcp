@@ -41,7 +41,7 @@ def main():
     # 3. Create API key
     print("Creating API key...")
     r = requests.post(
-        f"{IMMICH_URL}/api/api-key",
+        f"{IMMICH_URL}/api/api-keys",
         headers={"Authorization": f"Bearer {access_token}"},
         json={"name": "test-key", "permissions": ["all"]},
     )
