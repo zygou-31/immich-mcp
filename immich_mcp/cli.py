@@ -60,6 +60,7 @@ async def lifespan(app: FastAPI):
             instructions="MCP server for Immich API. To get started, you can use the 'discover_tools' tool with a query to find relevant tools for your task. For example: discover_tools(query='search for photos').",
             tools=tools,
         )
+        tool_server.settings.streamable_http_path = "/"
 
         # Optionally disable mounting the streamable HTTP app (useful for stdio-only tests)
         disable_streamable = (
