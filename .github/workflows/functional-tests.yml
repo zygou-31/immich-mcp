@@ -1,0 +1,58 @@
+name: Functional Tests
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  functional-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Set up Immich
+        run: |
+          mkdir ./immich-app
+          cd ./immich-app
+          wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+          wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
+          # Increase file limits
+          sudo sysctl -w fs.file-max=1000000
+          sudo sysctl -w fs.inotify.max_user_watches=524288
+          sudo sysctl -w fs.inotify.max_user_instances=512
+          docker compose up -d
+
+      - name: Wait for Immich to be healthy
+        run: |
+          echo "Waiting for Immich to start..."
+          sleep 30 # Initial wait
+          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:2283/api/server-info/ping)" != "200" ]]; do echo "Still waiting..."; sleep 5; done'
+          echo "Immich is up and running!"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies for setup script
+        run: pip install requests
+
+      - name: Create admin user and API key
+        id: setup_immich
+        run: python tests/setup_immich.py
+
+      - name: Install mcp-immich dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Set up environment for mcp-immich
+        run: |
+          echo "IMMICH_BASE_URL=http://localhost:2283" >> $GITHUB_ENV
+          echo "IMMICH_API_KEY=${{ steps.setup_immich.outputs.api-key }}" >> $GITHUB_ENV
+          echo "AUTH_TOKEN=$(openssl rand -hex 32)" >> $GITHUB_ENV
+
+      - name: Run functional tests
+        run: python tests/functional_tests.py
