@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "Waiting for Immich to start..."
           sleep 30 # Initial wait
-          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:2283/api/server-info/ping)" != "200" ]]; do echo "Still waiting..."; sleep 5; done'
+          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:2283/api/server/ping)" != "200" ]]; do echo "Still waiting..."; sleep 5; done'
           echo "Immich is up and running!"
 
       - name: Set up Python
