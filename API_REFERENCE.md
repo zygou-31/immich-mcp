@@ -1,5 +1,7 @@
 # 📖 API Reference
 
+**Important Note:** All tool endpoints listed below must be prefixed with `/mcp`. For example, the `discover_tools` tool is available at `/mcp/discover_tools`.
+
 ### Available Tools
 
 #### `discover_tools(query: str)`
