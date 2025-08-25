@@ -122,7 +122,7 @@ async def main():
     async with httpx.AsyncClient() as client:
         mcp_headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
         response = await client.post(
-            f"{MCP_URL}/search/metadata",
+            f"{MCP_URL}/mcp/search_metadata",
             headers=mcp_headers,
             json={},
         )
