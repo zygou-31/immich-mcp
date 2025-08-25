@@ -13,7 +13,7 @@ def main():
     print("Creating admin user...")
     try:
         r = requests.post(
-            f"{IMMICH_URL}/api/auth/sign-up-admin",
+            f"{IMMICH_URL}/api/auth/admin-sign-up",
             json={
                 "email": ADMIN_EMAIL,
                 "password": ADMIN_PASSWORD,
