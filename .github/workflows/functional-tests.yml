@@ -1,0 +1,52 @@
+name: Functional Tests (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      immich_url:
+        description: 'Immich API URL (e.g. http://host:2283/api)'
+        required: true
+      immich_key:
+        description: 'Immich API Key'
+        required: true
+
+jobs:
+  run-functional-tests:
+    name: Run functional ping tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Make script executable
+        run: chmod +x run_test_ping.sh || true
+
+      - name: Run functional ping script
+        env:
+          IMMICH_API_URL: ${{ github.event.inputs.immich_url }}
+          IMMICH_API_KEY: ${{ github.event.inputs.immich_key }}
+        run: |
+          echo "Running functional ping test against $IMMICH_API_URL"
+          bash run_test_ping.sh
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-logs
+          path: /tmp/mcp.log
+
+    # Notes:
+    # - This workflow is manually triggered and expects a reachable Immich instance.
+    # - Do not enable as a regular CI job since it depends on external services.
+

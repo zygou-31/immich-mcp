@@ -27,6 +27,8 @@ This document is a concise contributor guide for this repository. Follow the exa
 - **Naming:** unit tests `*.spec.*` or `*_test.*`; integration under `tests/integration/`.
 - **Coverage:** aim for meaningful coverage around core logic; run `npm test -- --coverage`.
 
+- **Functional tests:** Tests that require a running Immich instance (real-world integration) are documented in `tests/functional/README.md`. An optional, manually-triggered CI workflow is provided at `.github/workflows/functional-tests.yml` for running these tests in an environment where an Immich instance and credentials are available.
+
 ## Commit & Pull Request Guidelines
 - **Commit messages:** follow Conventional Commits (`feat:`, `fix:`, `chore:`). Example: `feat(auth): add token refresh`.
 - **PR checklist:** description, linked issue, test coverage, screenshots (UI changes), and at least one reviewer.
