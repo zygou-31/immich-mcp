@@ -5,10 +5,10 @@ on:
     inputs:
       immich_url:
         description: 'Immich API URL (e.g. http://host:2283/api)'
-        required: true
+        required: false
       immich_key:
         description: 'Immich API Key'
-        required: true
+        required: false
 
 jobs:
   run-functional-tests:
@@ -31,10 +31,19 @@ jobs:
       - name: Make script executable
         run: chmod +x run_test_ping.sh || true
 
+      - name: Set IMMICH env from inputs or secrets
+        run: |
+          echo "IMMICH_API_URL=${{ github.event.inputs.immich_url != '' && github.event.inputs.immich_url || secrets.IMMICH_API_URL }}" >> $GITHUB_ENV
+          echo "IMMICH_API_KEY=${{ github.event.inputs.immich_key != '' && github.event.inputs.immich_key || secrets.IMMICH_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Validate IMMICH credentials
+        run: |
+          if [ -z "$IMMICH_API_URL" ] || [ -z "$IMMICH_API_KEY" ]; then
+            echo "IMMICH_API_URL and IMMICH_API_KEY must be provided via inputs or repository secrets." >&2
+            exit 1
+          fi
+
       - name: Run functional ping script
-        env:
-          IMMICH_API_URL: ${{ github.event.inputs.immich_url }}
-          IMMICH_API_KEY: ${{ github.event.inputs.immich_key }}
         run: |
           echo "Running functional ping test against $IMMICH_API_URL"
           bash run_test_ping.sh
@@ -49,4 +58,3 @@ jobs:
     # Notes:
     # - This workflow is manually triggered and expects a reachable Immich instance.
     # - Do not enable as a regular CI job since it depends on external services.
-

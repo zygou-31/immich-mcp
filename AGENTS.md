@@ -29,6 +29,8 @@ This document is a concise contributor guide for this repository. Follow the exa
 
 - **Functional tests:** Tests that require a running Immich instance (real-world integration) are documented in `tests/functional/README.md`. An optional, manually-triggered CI workflow is provided at `.github/workflows/functional-tests.yml` for running these tests in an environment where an Immich instance and credentials are available.
 
+- **Functional tests workflow usage & safety:** The workflow is intended for manual triggering only. Provide `immich_url` and `immich_key` at dispatch or store them as repository secrets named `IMMICH_API_URL` and `IMMICH_API_KEY`. Do not store credentials in the repository. Avoid running the workflow against production servers and be aware that uploaded logs may contain sensitive information; restrict access to workflow artifacts as appropriate.
+
 ## Commit & Pull Request Guidelines
 - **Commit messages:** follow Conventional Commits (`feat:`, `fix:`, `chore:`). Example: `feat(auth): add token refresh`.
 - **PR checklist:** description, linked issue, test coverage, screenshots (UI changes), and at least one reviewer.
