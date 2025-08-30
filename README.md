@@ -37,3 +37,5 @@ The server requires the following environment variables to be set to connect to 
 
 - `IMMICH_API_URL`: The URL of your Immich API (e.g., `http://immich.local/api`).
 - `IMMICH_API_KEY`: Your Immich API key.
+
+Manual testing: The ping tool requires a running Immich instance — see `tests/functional/README.md` for manual test steps and suggested functional tests.
