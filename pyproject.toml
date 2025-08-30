@@ -31,7 +31,7 @@ packages = ["immich_mcp_server"]
 package-dir = {"" = "src"}
 
 [tool.ruff]
-line-length = 88
+line-length = 110
 target-version = "py311"
 
 [tool.ruff.lint]

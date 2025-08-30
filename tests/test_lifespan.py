@@ -1,7 +1,7 @@
 import json
 import os
 import threading
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
@@ -15,7 +15,8 @@ from tests.utils import initialize_session
 
 class UvicornTestServer(uvicorn.Server):
     """Uvicorn test server that runs in a thread."""
-    def __init__(self, app, host='127.0.0.1', port=8000):
+
+    def __init__(self, app, host="127.0.0.1", port=8000):
         self._startup_done = threading.Event()
         config = uvicorn.Config(app, host=host, port=port, log_level="info")
         super().__init__(config)
@@ -37,6 +38,7 @@ class UvicornTestServer(uvicorn.Server):
         await super().startup(sockets=sockets)
         self._startup_done.set()
 
+
 @pytest_asyncio.fixture(scope="module")
 async def server():
     """Fixture to run the MCP server in a background thread."""
@@ -52,7 +54,11 @@ async def server():
 
 @pytest.mark.asyncio
 @patch.dict(os.environ, {"IMMICH_API_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
-@patch("immich_mcp_server.immich_api.ImmichAPI.ping_server", new_callable=AsyncMock, return_value=True)
+@patch(
+    "immich_mcp_server.immich_api.ImmichAPI.ping_server",
+    new_callable=AsyncMock,
+    return_value=True,
+)
 async def test_ping_tool_success(mock_ping_server, server: str):
     """Tests the ping tool against a running server."""
     async with AsyncClient(base_url=server) as client:
@@ -82,7 +88,11 @@ async def test_ping_tool_success(mock_ping_server, server: str):
 
 @pytest.mark.asyncio
 @patch.dict(os.environ, {"IMMICH_API_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
-@patch("immich_mcp_server.immich_api.ImmichAPI.ping_server", new_callable=AsyncMock, return_value=False)
+@patch(
+    "immich_mcp_server.immich_api.ImmichAPI.ping_server",
+    new_callable=AsyncMock,
+    return_value=False,
+)
 async def test_ping_tool_failure(mock_ping_server, server: str):
     """Tests the ping tool with a mocked failed connection."""
     async with AsyncClient(base_url=server) as client:

@@ -1,5 +1,6 @@
-from immich_mcp_server.server import mcp
 from mcp.server.fastmcp import FastMCP
+
+from immich_mcp_server.server import mcp
 
 
 def test_server_instance_exists():

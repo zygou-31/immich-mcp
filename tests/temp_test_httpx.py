@@ -1,18 +1,21 @@
 from unittest.mock import patch
+
 import pytest
 from httpx import AsyncClient
-from starlette.applications import Starlette
 from starlette.responses import JSONResponse
+
 
 # A dummy class to patch
 class MyClass:
     def __init__(self):
         pass
 
+
 # A dummy ASGI app
 async def app(scope, receive, send):
     response = JSONResponse({"hello": "world"})
     await response(scope, receive, send)
+
 
 @pytest.mark.asyncio
 async def test_httpx_with_patch():

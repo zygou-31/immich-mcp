@@ -5,7 +5,7 @@ from typing import TypedDict
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.session import ServerSession
 
-from .immich_api import ImmichAPI
+from immich_mcp_server.immich_api import ImmichAPI
 
 
 class AppContext(TypedDict):

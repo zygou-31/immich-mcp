@@ -1,4 +1,3 @@
-import json
 import time
 
 from httpx import AsyncClient
@@ -22,9 +21,15 @@ async def initialize_session(client: AsyncClient) -> str:
     time.sleep(0.1)
     session_id = response.headers["mcp-session-id"]
     # Complete the initialization handshake with the correct notification
-    init_notify = {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}}
-    notify_headers = {"Accept": "application/json, text/event-stream", "mcp-session-id": session_id}
+    init_notify = {
+        "jsonrpc": "2.0",
+        "method": "notifications/initialized",
+        "params": {},
+    }
+    notify_headers = {
+        "Accept": "application/json, text/event-stream",
+        "mcp-session-id": session_id,
+    }
     notify_resp = await client.post("/mcp", json=init_notify, headers=notify_headers)
     notify_resp.raise_for_status()
     return session_id
-
