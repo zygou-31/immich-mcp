@@ -1,3 +1,4 @@
+import json
 import os
 
 import httpx
@@ -42,6 +43,14 @@ class ImmichAPI:
         try:
             response = await self._client.get("/server/ping")
             response.raise_for_status()
-            return response.json().get("res") == "pong"
-        except (httpx.RequestError, httpx.HTTPStatusError):
+            # Be defensive: if the response is not valid JSON or doesn't
+            # contain the expected shape, treat it as a failed ping.
+            data = response.json()
+            return bool(data and data.get("res") == "pong")
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError, ValueError):
+            return False
+        except Exception:
+            # Catch-all to avoid bubbling unexpected exceptions from the
+            # ping tool (network errors, parsing issues, etc.). The tool
+            # should report a friendly failure rather than crashing.
             return False
