@@ -43,14 +43,72 @@ class ImmichAPI:
         try:
             response = await self._client.get("/server/ping")
             response.raise_for_status()
-            # Be defensive: if the response is not valid JSON or doesn't
-            # contain the expected shape, treat it as a failed ping.
             data = response.json()
             return bool(data and data.get("res") == "pong")
         except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError, ValueError):
             return False
         except Exception:
-            # Catch-all to avoid bubbling unexpected exceptions from the
-            # ping tool (network errors, parsing issues, etc.). The tool
-            # should report a friendly failure rather than crashing.
             return False
+
+    async def get_my_user(self) -> dict:
+        """Fetches the current user's details."""
+        try:
+            response = await self._client.get("/users/me")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return {}
+
+    async def get_users_list(self) -> list[dict]:
+        """Fetches the list of users."""
+        try:
+            response = await self._client.get("/users")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return []
+
+    async def get_partners(self) -> list[dict]:
+        """Fetches the list of partners."""
+        try:
+            response = await self._client.get("/partners", params={"direction": "shared-by"})
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return []
+
+    async def get_asset(self, asset_id: str) -> dict:
+        """Fetches a single asset by its ID."""
+        try:
+            response = await self._client.get(f"/assets/{asset_id}")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return {}
+
+    async def get_my_api_key(self) -> dict:
+        """Fetches the current API key's details."""
+        try:
+            response = await self._client.get("/api-keys/me")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return {}
+
+    async def get_api_key_list(self) -> list[dict]:
+        """Fetches the list of API keys."""
+        try:
+            response = await self._client.get("/api-keys")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return []
+
+    async def get_api_key(self, api_key_id: str) -> dict:
+        """Fetches a single API key by its ID."""
+        try:
+            response = await self._client.get(f"/api-keys/{api_key_id}")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return {}
