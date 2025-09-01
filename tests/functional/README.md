@@ -14,7 +14,7 @@ There is a helper script `run_test_ping.sh` in the repository that automates the
 
 1. Export environment variables or pass them to the script invocation:
 
-   - `IMMICH_API_URL` — e.g. `http://localhost:2283/api`
+   - `IMMICH_API_URL` — The full URL to your Immich API, including the `/api` path (e.g., `http://localhost:2283/api`).
    - `IMMICH_API_KEY` — your Immich API key
 
 2. Run the script:

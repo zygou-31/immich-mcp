@@ -10,9 +10,9 @@ run_and_interact() {
 
   # Wait for the server to start
   for i in {1..30}; do
-    CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8003/ || true)
-    if [ "$CODE" != "000" ]; then
-      echo "Server HTTP code: $CODE"
+    CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8003/mcp || true)
+    if [ "$CODE" == "405" ]; then
+      echo "Server is up, HTTP code: $CODE"
       break
     fi
     sleep 0.2
