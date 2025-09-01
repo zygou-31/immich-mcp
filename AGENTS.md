@@ -40,3 +40,30 @@ This document is a concise contributor guide for this repository. Follow the exa
 - Run `git-secrets` or similar pre-commit hooks if available.
 
 If anything here conflicts with project-specific tooling, follow existing configs (e.g., `.eslintrc`, `Makefile`).
+
+## MCP Server Development
+
+When implementing MCP resources, be aware of the following subtlety regarding context injection:
+
+- **Tools**: For tools, the `Context` object is injected as a parameter in the function signature.
+  ```python
+  from mcp.server.fastmcp import Context
+
+  @mcp.tool()
+  async def my_tool(ctx: Context, ...):
+      ...
+  ```
+
+- **Resources**: For resources, the `Context` object is **NOT** passed as a parameter. Instead, you must call `mcp.ctx()` inside the function to get the context.
+  ```python
+  from mcp.server.fastmcp import FastMCP
+
+  mcp = FastMCP(...)
+
+  @mcp.resource("my-resource://...")
+  async def my_resource(...) -> ...:
+      ctx = mcp.get_context()
+      # ... use ctx
+  ```
+
+Failure to follow this pattern for resources will result in a `ValueError: Mismatch between URI parameters and function parameters` during server startup.

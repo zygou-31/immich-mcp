@@ -1,10 +1,9 @@
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import TypedDict, List
+from typing import List, TypedDict
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.session import ServerSession
 
 if os.environ.get("TESTING"):
     from tests.fake_immich_api import ImmichAPI
