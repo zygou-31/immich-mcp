@@ -1,9 +1,10 @@
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import List, TypedDict
+from typing import TypedDict, List
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.session import ServerSession
 
 if os.environ.get("TESTING"):
     from tests.fake_immich_api import ImmichAPI
@@ -58,8 +59,11 @@ class AppContext(TypedDict):
 @asynccontextmanager
 async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
     """Manage the application's lifespan, creating and cleaning up resources."""
+    print("Initializing app lifespan")
     async with ImmichAPI() as immich_client:
+        print("ImmichAPI client created")
         yield AppContext(immich_client=immich_client)
+    print("App lifespan finished")
 
 
 mcp = FastMCP(name="ImmichMCP", lifespan=app_lifespan)
