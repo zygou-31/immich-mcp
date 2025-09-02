@@ -8,11 +8,11 @@ WORKDIR /app
 RUN pip install uv
 
 # Copy the source distribution from the build job
-COPY dist/ ./dist/
+COPY *.tar.gz ./app.tar.gz
 
 # Install the package from the source distribution
 # This also installs the runtime dependencies.
-RUN uv pip install --system --no-cache ./dist/*.tar.gz
+RUN uv pip install --system --no-cache ./app.tar.gz
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
