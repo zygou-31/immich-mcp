@@ -8,7 +8,7 @@ from mcp.server.fastmcp import FastMCP
 if os.environ.get("TESTING"):
     from tests.fake_immich_api import ImmichAPI
 else:
-    from immich_mcp_server.immich_api import ImmichAPI
+    from immich_mcp.immich_api import ImmichAPI
 
 
 class User(TypedDict):

@@ -8,8 +8,8 @@ import pytest_asyncio
 import uvicorn
 from httpx import AsyncClient
 
-from immich_mcp_server.immich_api import ImmichAPI
-from immich_mcp_server.server import mcp
+from immich_mcp.immich_api import ImmichAPI
+from immich_mcp.server import mcp
 from tests.utils import initialize_session
 
 
@@ -55,7 +55,7 @@ async def server():
 @pytest.mark.asyncio
 @patch.dict(os.environ, {"IMMICH_BASE_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
 @patch(
-    "immich_mcp_server.immich_api.ImmichAPI.ping_server",
+    "immich_mcp.immich_api.ImmichAPI.ping_server",
     new_callable=AsyncMock,
     return_value=True,
 )
@@ -89,7 +89,7 @@ async def test_ping_tool_success(mock_ping_server, server: str):
 @pytest.mark.asyncio
 @patch.dict(os.environ, {"IMMICH_BASE_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
 @patch(
-    "immich_mcp_server.immich_api.ImmichAPI.ping_server",
+    "immich_mcp.immich_api.ImmichAPI.ping_server",
     new_callable=AsyncMock,
     return_value=False,
 )

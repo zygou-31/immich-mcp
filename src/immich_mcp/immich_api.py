@@ -29,6 +29,7 @@ class ImmichAPI:
                 "x-api-key": self.api_key,
                 "Accept": "application/json",
             },
+            timeout=30.0,
         )
 
     async def __aenter__(self):

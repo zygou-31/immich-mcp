@@ -26,7 +26,7 @@ async def main():
 
     server_command = [
         ".venv/bin/uvicorn",
-        "src.immich_mcp_server.main:app",
+        "src.immich_mcp.main:app",
         "--host",
         server_host,
         "--port",

@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from pytest_mock import MockerFixture
 
-from immich_mcp_server.server import (
+from immich_mcp.server import (
     get_api_key,
     get_api_key_list,
     get_asset,
@@ -18,7 +18,7 @@ from immich_mcp_server.server import (
 @pytest_asyncio.fixture
 def mock_mcp_context(mocker: MockerFixture):
     """Provides a mock MCP context with a mocked ImmichAPI client."""
-    mock_context = mocker.patch("immich_mcp_server.server.mcp.get_context")
+    mock_context = mocker.patch("immich_mcp.server.mcp.get_context")
     mock_api_client = AsyncMock()
     mock_context.return_value.request_context.lifespan_context = {"immich_client": mock_api_client}
     mock_context.return_value.api_key = "my-fake-api-key"
