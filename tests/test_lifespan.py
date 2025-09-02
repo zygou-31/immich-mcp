@@ -125,5 +125,5 @@ def test_immich_api_raises_on_missing_env_vars():
     environment variables are not set.
     """
     with patch.dict(os.environ, {}, clear=True):
-        with pytest.raises(ValueError, match="Immich API URL must be provided"):
+        with pytest.raises(ValueError, match="Immich base URL must be provided"):
             ImmichAPI()
