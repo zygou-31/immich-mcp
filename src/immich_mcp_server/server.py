@@ -1,10 +1,9 @@
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import TypedDict, List
+from typing import List, TypedDict
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.session import ServerSession
 
 if os.environ.get("TESTING"):
     from tests.fake_immich_api import ImmichAPI
@@ -89,7 +88,7 @@ async def get_user() -> User | None:
     immich_client = ctx.request_context.lifespan_context["immich_client"]
     user_data = await immich_client.get_my_user()
     if not user_data:
-        return None
+        raise ValueError("Failed to fetch user from Immich API")
     return User(id=user_data["id"], email=user_data["email"], name=user_data["name"])
 
 

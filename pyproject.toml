@@ -24,6 +24,8 @@ dev = [
     "pytest-asyncio",
     "ruff",
     "pre-commit",
+    "mcp[cli]",
+    "pydantic-ai-slim[mcp]",
 ]
 
 [tool.setuptools]

@@ -7,21 +7,24 @@ import httpx
 class ImmichAPI:
     """A client for interacting with the Immich API."""
 
-    def __init__(self, api_url: str | None = None, api_key: str | None = None):
-        self.api_url = api_url or os.environ.get("IMMICH_API_URL")
+    def __init__(self, base_url: str | None = None, api_key: str | None = None):
+        self.base_url = base_url or os.environ.get("IMMICH_BASE_URL")
         self.api_key = api_key or os.environ.get("IMMICH_API_KEY")
 
-        if not self.api_url:
+        if not self.base_url:
             raise ValueError(
-                "Immich API URL must be provided via argument or IMMICH_API_URL environment variable."
+                "Immich base URL must be provided via argument or IMMICH_BASE_URL environment variable."
             )
         if not self.api_key:
             raise ValueError(
                 "Immich API key must be provided via argument or IMMICH_API_KEY environment variable."
             )
 
+        # Ensure the base URL does not end with a slash, then append /api
+        api_url = f"{self.base_url.rstrip('/')}/api"
+
         self._client = httpx.AsyncClient(
-            base_url=self.api_url,
+            base_url=api_url,
             headers={
                 "x-api-key": self.api_key,
                 "Accept": "application/json",
