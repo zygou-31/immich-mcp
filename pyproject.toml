@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
 
 [project]
 name = "immich-mcp"
-version = "0.0.1"
+dynamic = ["version"]
 description = "An MCP server for Immich."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -31,9 +31,19 @@ dev = [
     "pydantic-ai-slim[mcp]",
 ]
 
-[tool.setuptools]
-packages = ["immich_mcp"]
-package-dir = {"" = "src"}
+[project.urls]
+Repository = "https://github.com/immich-app/immich-mcp"
+Issues = "https://github.com/immich-app/immich-mcp/issues"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/immich_mcp"]
 
 [tool.ruff]
 line-length = 110
