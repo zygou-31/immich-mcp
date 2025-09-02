@@ -25,7 +25,9 @@ async def main():
     server_address = f"http://{server_host}:{server_port}/mcp"
 
     server_command = [
-        ".venv/bin/uvicorn",
+        "python",
+        "-m",
+        "uvicorn",
         "src.immich_mcp.main:app",
         "--host",
         server_host,
