@@ -75,9 +75,9 @@ run_and_interact() {
   sleep 0.2
 }
 
-# Check if IMMICH_API_URL and IMMICH_API_KEY are set
-if [ -z "$IMMICH_API_URL" ] || [ -z "$IMMICH_API_KEY" ]; then
-  echo "Error: IMMICH_API_URL and IMMICH_API_KEY environment variables must be set."
+# Check if IMMICH_BASE_URL and IMMICH_API_KEY are set
+if [ -z "$IMMICH_BASE_URL" ] || [ -z "$IMMICH_API_KEY" ]; then
+  echo "Error: IMMICH_BASE_URL and IMMICH_API_KEY environment variables must be set."
   exit 1
 fi
 

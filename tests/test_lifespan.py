@@ -53,7 +53,7 @@ async def server():
 
 
 @pytest.mark.asyncio
-@patch.dict(os.environ, {"IMMICH_API_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
+@patch.dict(os.environ, {"IMMICH_BASE_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
 @patch(
     "immich_mcp_server.immich_api.ImmichAPI.ping_server",
     new_callable=AsyncMock,
@@ -87,7 +87,7 @@ async def test_ping_tool_success(mock_ping_server, server: str):
 
 
 @pytest.mark.asyncio
-@patch.dict(os.environ, {"IMMICH_API_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
+@patch.dict(os.environ, {"IMMICH_BASE_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
 @patch(
     "immich_mcp_server.immich_api.ImmichAPI.ping_server",
     new_callable=AsyncMock,
