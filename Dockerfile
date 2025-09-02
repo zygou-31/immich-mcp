@@ -4,6 +4,9 @@ FROM python:3.13-slim
 # Set the working directory in the container
 WORKDIR /app
 
+# Install git
+RUN apt-get update && apt-get install -y git --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 # Copy files required for installation
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
