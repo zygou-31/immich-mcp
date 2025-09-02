@@ -53,7 +53,7 @@ async def server():
 
 
 @pytest.mark.asyncio
-@patch.dict(os.environ, {"IMMICH_API_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
+@patch.dict(os.environ, {"IMMICH_BASE_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
 @patch(
     "immich_mcp_server.immich_api.ImmichAPI.ping_server",
     new_callable=AsyncMock,
@@ -87,7 +87,7 @@ async def test_ping_tool_success(mock_ping_server, server: str):
 
 
 @pytest.mark.asyncio
-@patch.dict(os.environ, {"IMMICH_API_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
+@patch.dict(os.environ, {"IMMICH_BASE_URL": "http://test.com", "IMMICH_API_KEY": "test-key"})
 @patch(
     "immich_mcp_server.immich_api.ImmichAPI.ping_server",
     new_callable=AsyncMock,
@@ -125,5 +125,5 @@ def test_immich_api_raises_on_missing_env_vars():
     environment variables are not set.
     """
     with patch.dict(os.environ, {}, clear=True):
-        with pytest.raises(ValueError, match="Immich API URL must be provided"):
+        with pytest.raises(ValueError, match="Immich base URL must be provided"):
             ImmichAPI()

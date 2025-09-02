@@ -1,49 +1,43 @@
-Purpose
--------
-This document describes how to manually test the `ping` tool against a running Immich instance and suggests functional tests that exercise real-world behavior. These tests are intentionally kept out of unit test suites because they require a live Immich server.
+# Functional Tests
 
-Prerequisites
--------------
-- A running Immich instance reachable via `IMMICH_API_URL`.
-- A valid `IMMICH_API_KEY` for that instance.
-- Python virtual environment with project dependencies installed.
+## Purpose
 
-Quick test (scripted)
----------------------
-There is a helper script `run_test_ping.sh` in the repository that automates the following flow. To run it:
+This directory contains a script for running functional tests against a live Immich instance. These tests are kept separate from the unit tests because they require a running server and valid API credentials.
 
-1. Export environment variables or pass them to the script invocation:
+## Running the Tests
 
-   - `IMMICH_API_URL` — e.g. `http://localhost:2283/api`
-   - `IMMICH_API_KEY` — your Immich API key
+The functional tests are executed via the `run_functional_tests.py` Python script.
 
-2. Run the script:
+### Prerequisites
 
-   ```bash
-   bash run_test_ping.sh
-   ```
+- A running Immich instance.
+- `curl` and `jq` must be installed and available in your `PATH`.
+- A Python virtual environment with the project's `dev` dependencies installed (`pip install -e ".[dev]"`).
 
-This script starts the MCP server, initializes a session, lists available tools and calls the `ping` tool. It repeats the flow with a dummy Immich URL to simulate an unreachable Immich server.
+### Configuration
 
-Manual steps (concise)
-----------------------
-- Start the MCP server (example):
-  - `uv run mcp dev src/immich_mcp_server/server.py` or use the provided `tmp_mcp_run3.py`/`uvicorn` invocation.
-- Initialize an MCP session by POSTing an `initialize` request to `/mcp` and capture the `mcp-session-id` header.
-- Send `notifications/initialized` with the `mcp-session-id` header.
-- Call `tools/list` to confirm the `ping` tool is present.
-- Call `tools/call` with `name: "ping"` and expect the textual content `pong` when the Immich server is reachable.
-- Repeat the call flow with `IMMICH_API_URL` pointing to a non-routable/dummy address and expect a friendly error message (for example: `error: could not connect to Immich server`).
+The test script requires the following environment variables to be set:
 
-Functional test ideas (for manual or gated CI)
----------------------------------------------
-- Successful ping: MCP `tools/call` returns `pong` when Immich is reachable.
-- Unreachable Immich: MCP returns a friendly error message instead of raising an exception.
-- Non-JSON or malformed response: MCP should handle JSON decode errors and return a friendly error.
-- Timeout behavior: if the client adds a short request timeout, verify that unreachable hosts fail quickly and return the friendly error.
+- `IMMICH_BASE_URL`: The base URL of your Immich instance (e.g., `http://immich.local:2283`). The script and server will handle appending the necessary `/api` path.
+- `IMMICH_API_KEY`: A valid API key for your Immich instance.
 
-Notes
------
-- Keep these tests out of the unit test suite since they require a real Immich instance.
-- Consider a separate integration test workflow or an opt-in CI job that runs these functional tests in an environment with a provisioned Immich instance.
+### Execution
 
+To run the tests, execute the following command from the root of the repository:
+
+```bash
+.venv/bin/python tests/functional/run_functional_tests.py
+```
+
+### What is Tested?
+
+The script starts the MCP server in the background and then uses an MCP client to perform the following actions:
+
+1.  **`ping`**: Pings the MCP server, which in turn pings the real Immich server.
+2.  **`user://me`**: Fetches the current user's details.
+3.  **`users://list`**: Fetches the list of all users.
+4.  **`partners://list`**: Fetches the list of partners.
+5.  **`apikey://me`**: Fetches the details of the current API key.
+6.  **`apikeys://list` and `apikey://{id}`**: Fetches the list of all API keys, then uses the ID of the first key to fetch its details individually.
+
+The script will print the results of each test and exit with a non-zero status code if any test fails.

@@ -33,19 +33,19 @@ jobs:
 
       - name: Set IMMICH env from inputs or secrets
         run: |
-          echo "IMMICH_API_URL=${{ github.event.inputs.immich_url != '' && github.event.inputs.immich_url || secrets.IMMICH_API_URL }}" >> $GITHUB_ENV
+          echo "IMMICH_BASE_URL=${{ github.event.inputs.immich_url != '' && github.event.inputs.immich_url || secrets.IMMICH_BASE_URL }}" >> $GITHUB_ENV
           echo "IMMICH_API_KEY=${{ github.event.inputs.immich_key != '' && github.event.inputs.immich_key || secrets.IMMICH_API_KEY }}" >> $GITHUB_ENV
 
       - name: Validate IMMICH credentials
         run: |
-          if [ -z "$IMMICH_API_URL" ] || [ -z "$IMMICH_API_KEY" ]; then
-            echo "IMMICH_API_URL and IMMICH_API_KEY must be provided via inputs or repository secrets." >&2
+          if [ -z "$IMMICH_BASE_URL" ] || [ -z "$IMMICH_API_KEY" ]; then
+            echo "IMMICH_BASE_URL and IMMICH_API_KEY must be provided via inputs or repository secrets." >&2
             exit 1
           fi
 
       - name: Run functional ping script
         run: |
-          echo "Running functional ping test against $IMMICH_API_URL"
+          echo "Running functional ping test against $IMMICH_BASE_URL"
           bash run_test_ping.sh
 
       - name: Upload logs
