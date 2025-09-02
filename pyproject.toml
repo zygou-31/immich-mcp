@@ -16,6 +16,8 @@ classifiers = [
 ]
 dependencies = [
     "mcp",
+    "uvicorn",
+    "gunicorn",
 ]
 
 [project.optional-dependencies]
