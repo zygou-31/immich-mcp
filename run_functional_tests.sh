@@ -4,7 +4,7 @@
 run_and_interact() {
   echo "--- Starting MCP server ---"
   # Use uv run to run the server
-  uv run uvicorn src.immich_mcp_server.main:app --port 8003 >/tmp/mcp.log 2>&1 &
+  uv run uvicorn src.immich_mcp.main:app --port 8003 >/tmp/mcp.log 2>&1 &
   PID=$!
   echo "Server started with PID $PID"
 

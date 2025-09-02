@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from pytest_mock import MockerFixture
 
-from immich_mcp_server.server import (
+from immich_mcp.server import (
     get_api_key,
     get_api_key_list,
     get_asset,
@@ -18,7 +18,7 @@ from immich_mcp_server.server import (
 @pytest_asyncio.fixture
 def mock_mcp_context(mocker: MockerFixture):
     """Provides a mock MCP context with a mocked ImmichAPI client."""
-    mock_context = mocker.patch("immich_mcp_server.server.mcp.get_context")
+    mock_context = mocker.patch("immich_mcp.server.mcp.get_context")
     mock_api_client = AsyncMock()
     mock_context.return_value.request_context.lifespan_context = {"immich_client": mock_api_client}
     mock_context.return_value.api_key = "my-fake-api-key"
@@ -114,6 +114,9 @@ async def test_get_my_api_key_resource(mock_mcp_context):
     mock_api_client.get_my_api_key.return_value = {
         "id": "api-key-me",
         "name": "My API Key",
+        "createdAt": "2025-09-02T00:00:00Z",
+        "updatedAt": "2025-09-02T00:00:00Z",
+        "permissions": ["all"],
     }
     api_key = await get_my_api_key()
 
@@ -127,8 +130,20 @@ async def test_get_api_key_list_resource(mock_mcp_context):
     """Tests that the api_keys resource correctly returns a mock list of api keys."""
     mock_api_client = mock_mcp_context.return_value.request_context.lifespan_context["immich_client"]
     mock_api_client.get_api_key_list.return_value = [
-        {"id": "api-key-1", "name": "API Key 1"},
-        {"id": "api-key-2", "name": "API Key 2"},
+        {
+            "id": "api-key-1",
+            "name": "API Key 1",
+            "createdAt": "2025-09-02T00:00:00Z",
+            "updatedAt": "2025-09-02T00:00:00Z",
+            "permissions": ["all"],
+        },
+        {
+            "id": "api-key-2",
+            "name": "API Key 2",
+            "createdAt": "2025-09-02T00:00:00Z",
+            "updatedAt": "2025-09-02T00:00:00Z",
+            "permissions": ["all"],
+        },
     ]
     api_key_list = await get_api_key_list()
 
@@ -145,6 +160,9 @@ async def test_get_api_key_resource(mock_mcp_context):
     mock_api_client.get_api_key.return_value = {
         "id": "api-key-1",
         "name": "API Key 1",
+        "createdAt": "2025-09-02T00:00:00Z",
+        "updatedAt": "2025-09-02T00:00:00Z",
+        "permissions": ["all"],
     }
     api_key = await get_api_key(api_key_id="api-key-1")
 

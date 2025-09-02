@@ -5,14 +5,33 @@ on:
     types: [created]
 
 jobs:
-  pypi:
+  functional-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system '.[dev]'
+      - name: Run functional tests
+        env:
+          IMMICH_BASE_URL: ${{ secrets.IMMICH_BASE_URL }}
+          IMMICH_API_KEY: ${{ secrets.IMMICH_API_KEY }}
+        run: python tests/functional/run_functional_tests.py
+
+  pypi:
+    needs: functional-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
       - name: Install dependencies
         run: pip install build
       - name: Build package
@@ -24,6 +43,7 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
 
   docker:
+    needs: functional-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,4 +56,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp-server:latest,${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp-server:${{ github.event.release.tag_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:latest,${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:${{ github.event.release.tag_name }}

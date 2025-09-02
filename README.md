@@ -28,7 +28,7 @@ pip install uv
 Then, run the server:
 
 ```bash
-uv run mcp dev src/immich_mcp_server/server.py
+uv run mcp dev src/immich_mcp/server.py
 ```
 
 ## Configuration
