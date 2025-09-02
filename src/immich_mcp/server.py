@@ -44,6 +44,9 @@ class ApiKey(TypedDict):
 
     id: str
     name: str
+    createdAt: str
+    updatedAt: str
+    permissions: List[str]
 
 
 ApiKeyList = List[ApiKey]
@@ -141,7 +144,13 @@ async def get_my_api_key() -> ApiKey | None:
     api_key_data = await immich_client.get_my_api_key()
     if not api_key_data:
         return None
-    return ApiKey(id=api_key_data["id"], name=api_key_data["name"])
+    return ApiKey(
+        id=api_key_data["id"],
+        name=api_key_data["name"],
+        createdAt=api_key_data["createdAt"],
+        updatedAt=api_key_data["updatedAt"],
+        permissions=api_key_data["permissions"],
+    )
 
 
 @mcp.resource("apikeys://list")
@@ -150,7 +159,16 @@ async def get_api_key_list() -> ApiKeyList:
     ctx = mcp.get_context()
     immich_client = ctx.request_context.lifespan_context["immich_client"]
     api_keys_data = await immich_client.get_api_key_list()
-    return [ApiKey(id=key["id"], name=key["name"]) for key in api_keys_data]
+    return [
+        ApiKey(
+            id=key["id"],
+            name=key["name"],
+            createdAt=key["createdAt"],
+            updatedAt=key["updatedAt"],
+            permissions=key["permissions"],
+        )
+        for key in api_keys_data
+    ]
 
 
 @mcp.resource("apikey://{api_key_id}")
@@ -161,7 +179,13 @@ async def get_api_key(api_key_id: str) -> ApiKey | None:
     api_key_data = await immich_client.get_api_key(api_key_id)
     if not api_key_data:
         return None
-    return ApiKey(id=api_key_data["id"], name=api_key_data["name"])
+    return ApiKey(
+        id=api_key_data["id"],
+        name=api_key_data["name"],
+        createdAt=api_key_data["createdAt"],
+        updatedAt=api_key_data["updatedAt"],
+        permissions=api_key_data["permissions"],
+    )
 
 
 if __name__ == "__main__":
