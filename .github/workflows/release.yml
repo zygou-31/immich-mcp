@@ -67,6 +67,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-package
+      - name: Rename artifact
+        run: mv immich-mcp-*.tar.gz app.tar.gz
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
