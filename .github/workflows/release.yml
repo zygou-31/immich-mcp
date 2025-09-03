@@ -75,5 +75,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:latest,${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:${{ github.event.release.tag_name }}
