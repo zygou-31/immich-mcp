@@ -1,31 +1,37 @@
-name: Release
+name: Build, Publish to PyPI, and Docker Hub
 
 on:
-  release:
-    types: [created]
+  push:
+    tags: ["v*"]   # Trigger on version tags, e.g. v1.2.3
 
 jobs:
-  build:
+  build-package:
+    name: Build Python Package
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for uv-dynamic-versioning to get tags
+      - name: Checkout source
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Install build dependencies
+
+      - name: Install build tools
         run: pip install build
-      - name: Build package
+
+      - name: Build sdist and wheel
         run: python -m build
-      - name: Upload artifact
+
+      - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: python-package
-          path: dist/
+          name: python-dist
+          path: dist/*
 
   functional-tests:
+    name: Run Functional Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,40 +49,51 @@ jobs:
           IMMICH_API_KEY: ${{ secrets.IMMICH_API_KEY }}
         run: python tests/functional/run_functional_tests.py
 
-  pypi:
-    needs: [build, functional-tests]
+  publish-pypi:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
+    needs: [build-package, functional-tests]
+    permissions:
+      id-token: write
     steps:
-      - name: Download artifact
+      - name: Download package
         uses: actions/download-artifact@v4
         with:
-          name: python-package
-          path: dist/
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          name: python-dist
+          path: dist
 
-  docker:
-    needs: [build, functional-tests]
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  docker-build:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    needs: [build-package, functional-tests]
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Download artifact
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Download package
         uses: actions/download-artifact@v4
         with:
-          name: python-package
-      - name: Rename artifact
-        run: mv immich-mcp-*.tar.gz app.tar.gz
+          name: python-dist
+          path: dist
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:latest,${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:${{ github.event.release.tag_name }}
+
+      - name: Build and Push Docker image
+        run: |
+          PACKAGE=$(ls dist/*.tar.gz | head -n 1)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Building Docker image for version $VERSION using $PACKAGE"
+          docker build \
+            --build-arg PACKAGE=$PACKAGE \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:$VERSION \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:$VERSION
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/immich-mcp:latest
