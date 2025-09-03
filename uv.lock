@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 
 [[package]]
@@ -203,7 +203,6 @@ wheels = [
 
 [[package]]
 name = "immich-mcp"
-version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "gunicorn" },
