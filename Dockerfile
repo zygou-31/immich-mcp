@@ -8,7 +8,7 @@ WORKDIR /app
 RUN pip install uv
 
 # Copy the source distribution from the build job
-COPY *.tar.gz ./app.tar.gz
+COPY immich-mcp-*.tar.gz ./app.tar.gz
 
 # Install the package from the source distribution
 # This also installs the runtime dependencies.
