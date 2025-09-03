@@ -1,22 +1,19 @@
-# Use an official Python runtime as a parent image
+# syntax=docker/dockerfile:1
 FROM python:3.13-slim
 
-# Set the working directory in the container
-WORKDIR /app
+ARG PACKAGE
 
-# Install uv, which will be used to install the package
-RUN pip install uv
+# Copy the prebuilt package tarball into the container
+COPY ${PACKAGE} /tmp/package.tar.gz
 
-# Copy the source distribution from the build job
-COPY app.tar.gz ./app.tar.gz
-
-# Install the package from the source distribution
-# This also installs the runtime dependencies.
-RUN uv pip install --system --no-cache ./app.tar.gz
+# Install dependencies and package
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    && pip install --no-cache-dir /tmp/package.tar.gz \
+    && rm /tmp/package.tar.gz \
+    && rm -rf /var/lib/apt/lists/*
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
 # Run the application
-# The package is installed in site-packages, so uvicorn can find it.
 CMD ["uvicorn", "immich_mcp.main:app", "--host", "0.0.0.0", "--port", "8000"]
