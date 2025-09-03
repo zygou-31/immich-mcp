@@ -188,5 +188,20 @@ async def get_api_key(api_key_id: str) -> ApiKey | None:
     )
 
 
+def run():
+    """Run the MCP server."""
+    import uvicorn
+
+    port = int(os.environ.get("IMMICH_MCP_PORT", 8626))
+    timeout = int(os.environ.get("IMMICH_MCP_TIMEOUT", 5))
+
+    uvicorn.run(
+        "immich_mcp.main:app",
+        host="0.0.0.0",
+        port=port,
+        timeout_keep_alive=timeout,
+    )
+
+
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    run()
