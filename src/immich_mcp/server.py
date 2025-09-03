@@ -1,7 +1,7 @@
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import List, TypedDict
+from typing import List, Set, TypedDict
 
 from mcp.server.fastmcp import FastMCP
 
@@ -56,6 +56,19 @@ class AppContext(TypedDict):
     """Application context holding shared resources."""
 
     immich_client: ImmichAPI
+    available_permissions: Set[str]
+
+
+TOOL_PERMISSIONS = {
+    "ping": None,
+    "get_user": "user.read",
+    "get_users_list": "user.read",
+    "get_partners": "user.read",
+    "get_asset": "asset.read",
+    "get_my_api_key": "apiKey.read",
+    "get_api_key_list": "apiKey.read",
+    "get_api_key": "apiKey.read",
+}
 
 
 @asynccontextmanager
@@ -64,14 +77,29 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
     print("Initializing app lifespan")
     async with ImmichAPI() as immich_client:
         print("ImmichAPI client created")
-        yield AppContext(immich_client=immich_client)
+        available_permissions = await immich_client.probe_permissions()
+
+        # Register tools based on available permissions
+        for tool_func, tool_type, path in AVAILABLE_TOOLS:
+            tool_name = tool_func.__name__
+            required_permission = TOOL_PERMISSIONS.get(tool_name)
+
+            if required_permission is None or required_permission in available_permissions:
+                if tool_type == "tool":
+                    server.tool()(tool_func)
+                elif tool_type == "resource":
+                    server.resource(path)(tool_func)
+                print(f"Registered tool '{tool_name}'")
+            else:
+                print(f"Skipping tool '{tool_name}' due to missing permission: {required_permission}")
+
+        yield AppContext(immich_client=immich_client, available_permissions=available_permissions)
     print("App lifespan finished")
 
 
 mcp = FastMCP(name="ImmichMCP", lifespan=app_lifespan)
 
 
-@mcp.tool()
 async def ping() -> str:
     """
     Pings the real Immich server to check for a valid connection.
@@ -84,7 +112,6 @@ async def ping() -> str:
     return "error: could not connect to Immich server"
 
 
-@mcp.resource("user://me")
 async def get_user() -> User | None:
     """Returns the current user's details."""
     ctx = mcp.get_context()
@@ -95,7 +122,6 @@ async def get_user() -> User | None:
     return User(id=user_data["id"], email=user_data["email"], name=user_data["name"])
 
 
-@mcp.resource("users://list")
 async def get_users_list() -> UsersList:
     """Returns a list of all users."""
     ctx = mcp.get_context()
@@ -104,7 +130,6 @@ async def get_users_list() -> UsersList:
     return [User(id=user["id"], email=user["email"], name=user["name"]) for user in users_data]
 
 
-@mcp.resource("partners://list")
 async def get_partners() -> PartnersList:
     """Returns a list of all partners."""
     ctx = mcp.get_context()
@@ -121,7 +146,6 @@ async def get_partners() -> PartnersList:
     ]
 
 
-@mcp.resource("asset://{asset_id}")
 async def get_asset(asset_id: str) -> Asset | None:
     """Returns an asset by its ID."""
     ctx = mcp.get_context()
@@ -136,7 +160,6 @@ async def get_asset(asset_id: str) -> Asset | None:
     )
 
 
-@mcp.resource("apikey://me")
 async def get_my_api_key() -> ApiKey | None:
     """Returns the current API key's details."""
     ctx = mcp.get_context()
@@ -153,7 +176,6 @@ async def get_my_api_key() -> ApiKey | None:
     )
 
 
-@mcp.resource("apikeys://list")
 async def get_api_key_list() -> ApiKeyList:
     """Returns a list of all API keys."""
     ctx = mcp.get_context()
@@ -171,7 +193,6 @@ async def get_api_key_list() -> ApiKeyList:
     ]
 
 
-@mcp.resource("apikey://{api_key_id}")
 async def get_api_key(api_key_id: str) -> ApiKey | None:
     """Returns an API key by its ID."""
     ctx = mcp.get_context()
@@ -186,6 +207,18 @@ async def get_api_key(api_key_id: str) -> ApiKey | None:
         updatedAt=api_key_data["updatedAt"],
         permissions=api_key_data["permissions"],
     )
+
+
+AVAILABLE_TOOLS = [
+    (ping, "tool", "ping"),
+    (get_user, "resource", "user://me"),
+    (get_users_list, "resource", "users://list"),
+    (get_partners, "resource", "partners://list"),
+    (get_asset, "resource", "asset://{asset_id}"),
+    (get_my_api_key, "resource", "apikey://me"),
+    (get_api_key_list, "resource", "apikeys://list"),
+    (get_api_key, "resource", "apikey://{api_key_id}"),
+]
 
 
 if __name__ == "__main__":

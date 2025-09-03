@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Set
 
 import httpx
 
@@ -29,7 +30,7 @@ class ImmichAPI:
                 "x-api-key": self.api_key,
                 "Accept": "application/json",
             },
-            timeout=30.0,
+            timeout=5.0,  # Use a shorter timeout for permission probing
         )
 
     async def __aenter__(self):
@@ -90,6 +91,33 @@ class ImmichAPI:
         except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
             return {}
 
+    async def get_assets(self) -> list[dict]:
+        """Fetches a list of assets."""
+        try:
+            response = await self._client.get("/assets?limit=1")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return []
+
+    async def get_albums(self) -> list[dict]:
+        """Fetches a list of albums."""
+        try:
+            response = await self._client.get("/albums?limit=1")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return []
+
+    async def get_server_about(self) -> dict:
+        """Fetches server information."""
+        try:
+            response = await self._client.get("/server-info/about")
+            response.raise_for_status()
+            return response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+            return {}
+
     async def get_my_api_key(self) -> dict:
         """Fetches the current API key's details."""
         try:
@@ -116,3 +144,31 @@ class ImmichAPI:
             return response.json()
         except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
             return {}
+
+    async def probe_permissions(self) -> Set[str]:
+        """
+        Probes the Immich API to determine the permissions available to the current API key.
+        """
+        permissions: Set[str] = set()
+
+        # First, try to get the API key details directly.
+        # This is the most reliable way to get all permissions.
+        api_key_data = await self.get_my_api_key()
+        if api_key_data and "permissions" in api_key_data:
+            print(f"Permissions obtained via get_my_api_key: {api_key_data['permissions']}")
+            return set(api_key_data["permissions"])
+
+        # If the above fails, probe for permissions individually.
+        print("Could not get API key details, probing for permissions individually.")
+
+        if await self.get_my_user():
+            permissions.add("user.read")
+        if await self.get_assets():
+            permissions.add("asset.read")
+        if await self.get_albums():
+            permissions.add("album.read")
+        if await self.get_server_about():
+            permissions.add("server.about")
+
+        print(f"Probed permissions: {permissions}")
+        return permissions
