@@ -6,11 +6,13 @@ services:
     container_name: immich-mcp
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${IMMICH_MCP_PORT:-8626}:8000"
     environment:
       - IMMICH_BASE_URL=${IMMICH_BASE_URL}
       - IMMICH_API_KEY=${IMMICH_API_KEY}
-      - TZ=UTC # Set your timezone
+      - IMMICH_MCP_PORT=${IMMICH_MCP_PORT:-8626}
+      - IMMICH_MCP_TIMEOUT=${IMMICH_MCP_TIMEOUT:-5}
+      - TZ=${TZ:-UTC}
     # To build from source instead of using a pre-built image:
     # build:
     #   context: .

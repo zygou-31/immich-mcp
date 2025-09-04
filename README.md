@@ -48,11 +48,15 @@ Official container images are available on [Docker Hub](https://hub.docker.com/r
 
 The server is configured using environment variables:
 
-| Variable | Description | Required |
-| --- | --- | --- |
-| `IMMICH_BASE_URL` | The base URL of your Immich instance (e.g., `http://immich.local:2283`). | **Yes** |
-| `IMMICH_API_KEY` | Your Immich API key. | **Yes** |
-| `TZ` | Your timezone, e.g., `America/New_York`. Defaults to `UTC`. | No |
+| Variable | Description | Default | Required |
+| --- | --- | --- | --- |
+| `IMMICH_BASE_URL` | The base URL of your Immich instance (e.g., `http://immich.local:2283`). | | **Yes** |
+| `IMMICH_API_KEY` | Your Immich API key. | | **Yes** |
+| `IMMICH_MCP_PORT` | The port on which the server will listen. | `8626` | No |
+| `IMMICH_MCP_TIMEOUT` | The keep-alive timeout for the server in seconds. | `5` | No |
+| `TZ` | Sets the timezone inside the container to ensure timestamps are correct. | `UTC` | No |
+
+**Note on `TZ`**: While the application does not directly use this variable, it is a standard in containerized environments to ensure that any timestamps (e.g., in logs) are correctly aligned with your local time.
 
 When running with `docker-compose`, these variables are loaded from the `.env` file.
 
