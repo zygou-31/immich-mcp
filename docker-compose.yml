@@ -1,0 +1,19 @@
+services:
+  immich-mcp:
+    # Official builds are available at https://hub.docker.com/r/bflad/immich-mcp
+    # Production builds are also available at ghcr.io/bflad/immich-mcp
+    image: bflad/immich-mcp:latest
+    container_name: immich-mcp
+    restart: unless-stopped
+    ports:
+      - "${IMMICH_MCP_PORT:-8626}:8000"
+    environment:
+      - IMMICH_BASE_URL=${IMMICH_BASE_URL}
+      - IMMICH_API_KEY=${IMMICH_API_KEY}
+      - IMMICH_MCP_PORT=${IMMICH_MCP_PORT:-8626}
+      - IMMICH_MCP_TIMEOUT=${IMMICH_MCP_TIMEOUT:-5}
+      - TZ=${TZ:-UTC}
+    # To build from source instead of using a pre-built image:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
